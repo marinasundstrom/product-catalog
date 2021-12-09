@@ -1,0 +1,41 @@
+﻿@typeparam TItem
+
+<div class="form-control-wrapper">
+
+    <select class="form-control" @onchange="ChangeHandler">
+        @if (ShowDefaultOption)
+        {
+            <option value="0" hidden disabled>- Please Select -</option>
+        }
+        @foreach (var (id, item) in idDictionary)
+        {
+            <option value="@id" selected="@(item.Equals(Value))">@Selector(item).ToString()</option>
+        }
+    </select>
+</div>
+
+@code {
+
+    [Parameter] public IList<TItem> Items { get; set; }
+    [Parameter] public Func<TItem, object> Selector { get; set; }
+    [Parameter] public TItem Value { get; set; }
+    [Parameter] public EventCallback<TItem> ValueChanged { get; set; }
+    [Parameter] public bool ShowDefaultOption { get; set; } = true;
+
+    private Dictionary<Guid, TItem> idDictionary;
+
+    protected override void OnInitialized()
+    {
+        idDictionary = new Dictionary<Guid, TItem>();
+        Items.ToList().ForEach(x => idDictionary.Add(Guid.NewGuid(), x));
+    }
+
+    private async Task ChangeHandler(ChangeEventArgs args)
+    {
+        if (idDictionary.TryGetValue(Guid.Parse(args.Value.ToString()), out var selectedItem))
+        {
+            Value = selectedItem;
+            await ValueChanged.InvokeAsync(selectedItem);
+        }
+    }
+}

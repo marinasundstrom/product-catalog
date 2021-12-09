@@ -1,0 +1,34 @@
+﻿@page "/products"
+@inject IProductsClient ProductsClient
+
+<PageTitle>Products</PageTitle>
+
+@if(products == null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    @foreach(var product in products)
+    {
+        <div>
+            <a href="/products/@product.Id">@product.Name</a>
+
+            @if(product.HasVariants)
+            {
+                <small> Har flera varianter</small>
+            }
+        </div>
+    }
+}
+
+@code
+{
+    IEnumerable<ApiProduct>? products = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ProductsClient.GetProductsAsync();
+    }
+}
+

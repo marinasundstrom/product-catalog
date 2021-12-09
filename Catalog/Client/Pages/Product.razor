@@ -1,0 +1,316 @@
+﻿@page "/products/{productId}"
+@inject IProductsClient ProductsClient
+
+<PageTitle>Product</PageTitle>
+
+@if (vm is null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <PageTitle>@vm.Name (@vm.Sku)</PageTitle>
+
+
+    <div>
+        <h3>@vm.Name</h3>
+
+        <p>@vm.Description</p>
+
+        @if (vm.Sku is not null)
+        {
+            <p class="mb-4">SKU: @vm.Sku</p>
+        }
+
+        @if (vm.Price is not null)
+        {
+            <p class="mb-4"> @vm.Price?.ToString("c")</p>
+        }
+
+        @if (vm.Total > 0)
+        {
+            <p class="mb-4"> @vm.Total.ToString("c")</p>
+        }
+
+        @if (variant is not null)
+        {
+            <h4>@variant.Description</h4>
+
+            @if (variant.Sku is not null)
+            {
+                <p class="mb-4">SKU: @variant.Sku</p>
+            }
+
+            <p class="mb-4"> @variant.Price.GetValueOrDefault().ToString("c")</p>
+        }
+
+        <EditForm Model="@vm">
+
+            @foreach (var optionGroup in vm.OptionGroups)
+            {
+                if (optionGroup.Name is not null)
+                {
+                    <h4 class="mt-4">@optionGroup.Name</h4> @if (optionGroup.Max is not null)
+                    {<small class="mb-2">Max @optionGroup.Max</small>}
+                }
+
+                @foreach (var option in optionGroup.Options)
+                {
+                    var optionValues = option.Values;
+
+                    <div class="form-group">
+
+                        @if (optionValues.Any())
+                        {
+                            <label>@option.Name</label>
+
+                            <MySelect TItem="OptionValueVM" Items="optionValues" Value="option.SelectedValue" ValueChanged="async (value) => { option.SelectedValue = value; if (product.HasVariants) { await Update(vm, option); }; }" Selector="Selector" />
+                        }
+                        else
+                        {
+                            @*
+                            @if(optionGroup.Max == 1)
+                            {
+
+                            }
+                            else { }
+                            *@
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="option.IsSelected"
+                                               disabled="@(optionGroup.Max != null && !option.IsSelected && optionGroup.Options.Count(x => x.IsSelected) == optionGroup.Max)" />
+                                <label class="form-check-label">
+                                    @option.Name
+                                    @if (option.Price is not null)
+                                    {
+                                        <text> (+ @option.Price?.ToString("c"))</text>
+                                    }
+                                </label>
+                            </div>
+                        }
+
+                    </div>
+                }
+            }
+
+            @*
+            @if (product.HasVariants)
+            {
+                <div class="form-group">
+                    <label>Variants</label>
+                    <select class="form-control">
+                        @foreach (var variant in variants)
+                        {
+                            <option value="@variant.Id">
+                                @variant.Description
+                            @if (variant.Price is not null)
+                            {
+                                <text> (@variant.Price?.ToString("c"))</text>
+                            }
+                        </option>
+                    }
+                    </select>
+                </div>
+            }
+            *@
+        </EditForm>
+
+        @*<button class="btn btn-primary" @onclick="Update">Update</button>*@
+
+    </div>
+}
+
+@code
+{
+    async Task Update(ProductVM product, OptionVM option)
+    {
+        /*
+        var selectedOptions = product.OptionGroups
+            .SelectMany(x => x.Options)
+            .Where(x => x.SelectedValue is not null)
+            .ToDictionary(x => x.Id, x => x.SelectedValue!.Value);
+
+        var options = await ProductsClient.HasOptionValuesAsync(product.Id, option.Id, selectedOptions);
+
+        foreach (var o in options)
+        {
+            Console.WriteLine(o.Value);
+        }
+        */
+
+        var selectedOptions = product.OptionGroups
+           .SelectMany(x => x.Options)
+           .Where(x => x.SelectedValue is not null)
+           .ToDictionary(x => x.Id, x => x.SelectedValue!.Value);
+
+        variant = await ProductsClient.FindVariantByOptionValuesAsync(product.Id, selectedOptions);
+    }
+
+    string Selector(OptionValueVM optionValue)
+    {
+        return $"{optionValue.Value}{(optionValue.Price is null ? null : $" + {optionValue.Price?.ToString("c")}")}";
+    }
+
+    ProductVM? vm = null;
+
+    ApiProduct? product;
+    IEnumerable<IGrouping<string?, ApiOption>>? optionGroups;
+    IEnumerable<ApiProductVariant>? variants;
+
+    ApiProductVariant? variant;
+
+    Dictionary<string, IEnumerable<ApiOptionValue>> optionsValues = new Dictionary<string, IEnumerable<ApiOptionValue>>();
+
+    [Parameter]
+    public string? ProductId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await ProductsClient.GetProductAsync(ProductId);
+
+        var options2 = await ProductsClient.GetProductOptionsAsync(ProductId);
+        optionGroups = options2
+            .OrderBy(x => x.Group?.Seq)
+            .GroupBy(x => x.Group?.Name);
+
+        vm = new ProductVM()
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Sku = product.Sku,
+            Price = product.Price,
+            Description = product.Description
+        };
+
+        if (optionGroups is not null)
+        {
+            foreach (var optionGroup in optionGroups)
+            {
+                OptionGroupVM groupVm = new()
+                {
+                    Id = null!,
+                    Name = optionGroup.Key,
+                    Min = optionGroup.ElementAt(0)?.Group?.Min,
+                    Max = optionGroup.ElementAt(0)?.Group?.Max
+                };
+
+                if (optionGroup is null) continue;
+
+                foreach (var option in optionGroup)
+                {
+                    OptionVM optionVm = new()
+                    {
+                        Id = option.Id,
+                        Name = option.Name,
+                        Price = option.Price
+                    };
+
+                    groupVm.Options.Add(optionVm);
+
+                    var values = await ProductsClient.GetProductOptionValuesAsync(ProductId, option.Id);
+
+                    optionsValues[option.Id] = values;
+
+                    foreach (var value in values.OrderBy(x => x.Seq))
+                    {
+                        OptionValueVM optionValueVm = new()
+                        {
+                            Id = value.Id,
+                            Value = value.Value,
+                            Price = value.Price
+                        };
+
+                        optionVm.Values.Add(optionValueVm);
+                    }
+
+                    if (option.IsSelected)
+                    {
+                        optionVm.IsSelected = option.IsSelected;
+                    }
+
+                    if (option.DefaultValue is not null)
+                    {
+                        optionVm.SelectedValue = optionVm.Values.FirstOrDefault(x => x.Id == option.DefaultValue.Id);
+                    }
+                    else
+                    {
+                        optionVm.SelectedValue = optionVm.Values.FirstOrDefault();
+                    }
+                }
+
+                vm.OptionGroups.Add(groupVm);
+            }
+        }
+
+        if (product.HasVariants)
+        {
+            variants = await ProductsClient.GetVariantsAsync(ProductId);
+        }
+    }
+
+    class ProductVM
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string? Description { get; set; }
+
+        public string? Sku { get; set; }
+
+        public decimal? Price { get; set; }
+
+        public List<OptionGroupVM> OptionGroups { get; set; } = new List<OptionGroupVM>();
+
+        public decimal Total => Price.GetValueOrDefault()
+                + OptionGroups.SelectMany(x => x.Options)
+                .Where(x => x.IsSelected || x.SelectedValue is not null)
+                .Select(x => x.Price.GetValueOrDefault() + (x?.SelectedValue?.Price ?? 0))
+                .Sum();
+    }
+
+    class OptionVM
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string? Sku { get; set; }
+
+        public decimal? Price { get; set; }
+
+        public bool IsSelected { get; set; }
+
+        public List<OptionValueVM> Values { get; set; } = new List<OptionValueVM>();
+
+        public OptionValueVM? SelectedValue { get; set; }
+    }
+
+    class OptionGroupVM
+    {
+        public string Id { get; set; }
+
+        public string? Name { get; set; }
+
+        public int? Min { get; set; }
+
+        public int? Max { get; set; }
+
+        public List<OptionVM> Options { get; set; } = new List<OptionVM>();
+    }
+
+    class OptionValueVM
+    {
+        public string Id { get; set; }
+
+        public string Value { get; set; }
+
+        public decimal? Price { get; set; }
+    }
+
+    void Update()
+    {
+        //vm.Update();
+        StateHasChanged();
+    }
+}
+
