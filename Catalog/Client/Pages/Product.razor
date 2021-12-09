@@ -244,6 +244,9 @@ else
         if (product.HasVariants)
         {
             variants = await ProductsClient.GetVariantsAsync(ProductId);
+
+
+            await Update(vm, null!);
         }
     }
 
