@@ -335,6 +335,90 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "operationId": "Products_CreateVariant",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "variant",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiCreateProductVariant"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProductVariant"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Products/{productId}/Variants/{variantId}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "operationId": "Products_GetVariant",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          },
+          {
+            "name": "variantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProductVariant"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/Products/{productId}/Variants/Find": {
@@ -385,12 +469,12 @@
         }
       }
     },
-    "/api/Products/{productId}/Variants/{variantId}": {
+    "/api/Products/{productId}/Variants/{variantId}/Options": {
       "get": {
         "tags": [
           "Products"
         ],
-        "operationId": "Products_GetVariants2",
+        "operationId": "Products_GetVariantOptions",
         "parameters": [
           {
             "name": "productId",
@@ -419,10 +503,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ApiProductVariant"
-                  }
+                  "$ref": "#/components/schemas/ApiProductVariant"
                 }
               }
             }
@@ -605,6 +686,65 @@
             "type": "number",
             "format": "decimal",
             "nullable": true
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiProductVariantOption"
+            }
+          }
+        }
+      },
+      "ApiProductVariantOption": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiCreateProductVariant": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "sku": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiCreateProductVariantOption"
+            }
+          }
+        }
+      },
+      "ApiCreateProductVariantOption": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "optionId": {
+            "type": "string"
+          },
+          "valueId": {
+            "type": "string"
           }
         }
       },

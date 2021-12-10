@@ -58,16 +58,28 @@ namespace Catalog.Server.Controllers
             return Ok(await api.GetProductVariants(productId));
         }
 
+        [HttpGet("{productId}/Variants/{variantId}")]
+        public async Task<ActionResult<ApiProductVariant>> GetVariant(string productId, string variantId)
+        {
+            return Ok(await api.GetProductVariant(productId, variantId));
+        }
+
         [HttpPost("{productId}/Variants/Find")]
         public async Task<ActionResult<ApiProductVariant>> FindVariantByOptionValues(string productId, Dictionary<string, string?> selectedOptions)
         {
-            return Ok(await api.GetProductVariant(productId, selectedOptions));
+            return Ok(await api.FindProductVariant(productId, selectedOptions));
         }
 
-        [HttpGet("{productId}/Variants/{variantId}")]
-        public async Task<ActionResult<IEnumerable<ApiProductVariant>>> GetVariants(string productId, string variantId)
+        [HttpGet("{productId}/Variants/{variantId}/Options")]
+        public async Task<ActionResult<ApiProductVariant>> GetVariantOptions(string productId, string variantId)
         {
             return Ok(await api.GetProductVariantOptions(productId, variantId));
+        }
+
+        [HttpPost("{productId}/Variants")]
+        public async Task<ActionResult<ApiProductVariant>> CreateVariant(string productId, ApiCreateProductVariant variant)
+        {
+            return Ok(await api.CreateVariant(productId, variant));
         }
     }
 }

@@ -1,0 +1,114 @@
+﻿@page "/products/{productId}/edit"
+@layout PageLayout
+@inject IProductsClient ProductsClient
+@inject IModalService ModalService
+
+<PageTitle>Product</PageTitle>
+
+@if (product is null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <PageTitle>@product.Name (@product.Sku)</PageTitle>
+
+    <h3>@product.Name</h3>
+
+    <label>
+        <input type="checkbox" @bind-value="product.HasVariants" checked="@product.HasVariants" />
+        Has variants
+    </label>
+
+    @if (product.HasVariants)
+    {
+
+        <h4>Variants</h4>
+
+        <button class="btn btn-secondary" @onclick="CreateVariant">Create variant</button>
+
+        @if (variants is not null)
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>SKU</th>
+                        <th>Price</th>
+
+                        @if (variants is not null && variants.Any())
+                        {
+                            @foreach (var option in variants.First().Options)
+                            {
+                                <th>@option.Name</th>
+                            }
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (variants is not null)
+                    {
+                        @foreach (var variant in variants)
+                        {
+                            <tr>
+                                <td>@variant.Description</td>
+                                <td>@variant.Sku</td>
+                                <td>@variant.Price?.ToString("c")</td>
+
+                                @if (variant.Options is not null)
+                                {
+                                    foreach (var option in variant.Options)
+                                    {
+                                        <td>@option.Value</td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    }
+}
+
+@code
+{
+    ApiProduct? product;
+    List<ApiProductVariant>? variants;
+
+    [Parameter]
+    public string? ProductId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await ProductsClient.GetProductAsync(ProductId);
+        variants = (await ProductsClient.GetVariantsAsync(ProductId)).ToList();
+    }
+
+    async Task CreateVariant()
+    {
+        ModalParameters parameters = new();
+        parameters.Add(nameof(CreateVariantModal.ProductId), ProductId);
+
+        var modalRef = ModalService.Show<CreateVariantModal>("New Variant", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        variants.Add((ApiProductVariant)result.Data);
+    }
+
+    class ProductVariantVm
+    {
+        public string? Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string SKU { get; set; }
+
+        public ApiOptionValue? SelectedValue { get; set; }
+
+        public IEnumerable<ApiOptionValue> Values { get; set; } = null!;
+    }
+}

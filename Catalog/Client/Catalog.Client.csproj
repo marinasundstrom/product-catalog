@@ -35,9 +35,13 @@
 		</PackageReference>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+		<PackageReference Include="Blazored.Toast" Version="3.2.2" />
+		<PackageReference Include="Blazored.Modal" Version="6.0.1" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Components\" />
+	  <None Remove="Blazored.Toast" />
+	  <None Remove="Blazored.Modal" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Components\" />

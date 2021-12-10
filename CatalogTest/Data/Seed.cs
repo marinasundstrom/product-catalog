@@ -78,7 +78,7 @@ public class Seed
         var variantSmall = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Small",
+            Name = "Small",
             SKU = "12345667",
             UPC = "4345547457457",
         };
@@ -94,7 +94,7 @@ public class Seed
         var variantMedium = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Medium",
+            Name = "Medium",
             SKU = "4465645645",
             UPC = "543453454567",
         };
@@ -110,7 +110,7 @@ public class Seed
         var variantLarge = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Large",
+            Name = "Large",
             SKU = "233423544545",
             UPC = "6876345345345",
         };
@@ -194,10 +194,12 @@ public class Seed
 
         option2.Values.Add(valueRed);
 
+        /*
+
         var variantBlueSmall = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Blue S",
+            Name = "Blue S",
             SKU = "TSHIRT-BLUE-S",
             UPC = "4345547457457",
             Price = 120,
@@ -217,10 +219,12 @@ public class Seed
 
         product.Variants.Add(variantBlueSmall);
 
+        */
+
         var variantBlueMedium = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Blue M",
+            Name = "Blue M",
             SKU = "TSHIRT-BLUE-M",
             UPC = "543453454567",
             Price = 120
@@ -243,7 +247,7 @@ public class Seed
         var variantBlueLarge = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Blue L",
+            Name = "Blue L",
             SKU = "TSHIRT-BLUE-L",
             UPC = "6876345345345",
             Price = 60,
@@ -268,7 +272,7 @@ public class Seed
         var variantRedSmall = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Red S",
+            Name = "Red S",
             SKU = "TSHIRT-RED-S",
             UPC = "4345547457457",
             Price = 120,
@@ -291,7 +295,7 @@ public class Seed
         var variantRedMedium = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Red M",
+            Name = "Red M",
             SKU = "TSHIRT-RED-M",
             UPC = "543453454567",
             Price = 120,
@@ -314,7 +318,7 @@ public class Seed
         var variantRedLarge = new ProductVariant()
         {
             Id = Guid.NewGuid().ToString(),
-            Description = "Red L",
+            Name = "Red L",
             SKU = "TSHIRT-RED-L",
             UPC = "6876345345345",
             Price = 120,

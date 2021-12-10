@@ -184,7 +184,9 @@ public class ProductVariant
 
     public Product Product { get; set; } = null!;
 
-    public string Description { get; set; } = null!;
+    public string Name { get; set; } = null!;
+
+    public string? Description { get; set; } 
 
     public string? SKU { get; set; }
 
