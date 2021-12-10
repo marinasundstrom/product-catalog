@@ -21,7 +21,7 @@ public class Api
             .Include(pv => pv.Group)
             .ToArrayAsync();
 
-        return products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.SKU, x.Price, x.HasVariants));
+        return products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price, x.HasVariants));
     }
 
     public async Task<ApiProduct?> GetProduct(string productId)
@@ -34,7 +34,7 @@ public class Api
 
         if (x == null) return null;
 
-        return new ApiProduct(x.Id, x.Name, x.Description, x.SKU, x.Price, x.HasVariants);
+        return new ApiProduct(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price, x.HasVariants);
     }
 
     public async Task<IEnumerable<ApiOption>> GetProductOptions(string productId)
@@ -115,7 +115,7 @@ public class Api
             .Where(pv => pv.Product.Id == productId)
             .ToArrayAsync();
 
-        return variants.Select(x => new ApiProductVariant(x.Id, x.Description, x.SKU, x.Price));
+        return variants.Select(x => new ApiProductVariant(x.Id, x.Description, x.SKU, x.Image, x.Price));
     }
 
     public async Task<ApiProductVariant> GetProductVariant(string productId, Dictionary<string, string?> selectedOptions)
@@ -141,7 +141,7 @@ public class Api
 
         var x = variants.First();
 
-        return new ApiProductVariant(x.Id, x.Description, x.SKU, x.Price);
+        return new ApiProductVariant(x.Id, x.Description, x.SKU, x.Image, x.Price);
     }
 
     public async Task<IEnumerable<ApiProductVarianOption>> GetProductVariantOptions(string productId, string productVariantId)
@@ -191,9 +191,9 @@ public class Api
     }
 }
 
-public record class ApiProduct(string Id, string Name, string Description, string? SKU, decimal? Price, bool HasVariants);
+public record class ApiProduct(string Id, string Name, string Description, string? SKU, string? Image, decimal? Price, bool HasVariants);
 
-public record class ApiProductVariant(string Id, string Description, string? SKU, decimal? Price);
+public record class ApiProductVariant(string Id, string Description, string? SKU, string? Image, decimal? Price);
 
 public record class ApiProductVarianOption(string Id, string Name, string Value);
 

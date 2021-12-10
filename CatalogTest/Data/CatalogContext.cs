@@ -63,6 +63,8 @@ public class ProductGroup
 
     public string? Description { get; set; }
 
+    public string? Image { get; set; }
+
     public List<Product> Products { get; } = new List<Product>();
 }
 
@@ -79,6 +81,8 @@ public class Product
     public string? SKU { get; set; }
 
     public string? UPC { get; set; }
+
+    public string? Image { get; set; }
 
     public decimal? Price { get; set; }
 
@@ -185,6 +189,8 @@ public class ProductVariant
     public string? SKU { get; set; }
 
     public string? UPC { get; set; }
+
+    public string? Image { get; set; }
 
     public decimal? Price { get; set; }
 

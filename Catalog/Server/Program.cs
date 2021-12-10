@@ -50,6 +50,6 @@ app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
-//await Seed.SeedAsync(app.Services);
+await Seed.SeedAsync(app.Services);
 
 app.Run();

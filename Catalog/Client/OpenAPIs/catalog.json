@@ -569,6 +569,10 @@
             "type": "string",
             "nullable": true
           },
+          "image": {
+            "type": "string",
+            "nullable": true
+          },
           "price": {
             "type": "number",
             "format": "decimal",
@@ -590,6 +594,10 @@
             "type": "string"
           },
           "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
             "type": "string",
             "nullable": true
           },

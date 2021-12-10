@@ -15,8 +15,14 @@ else
     <div class="row">
         <div class="col-md-4">
             <div class="card shadow-sm">
-                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
-
+                @if (vm.Image is not null)
+                {
+                    <img class="bd-placeholder-img card-img-top" style="width: 100%; height: 225px" src="@vm.Image" />
+                }
+                else
+                {
+                    <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
+                }
                 @*
 
                     <div class="card-body">
@@ -206,6 +212,7 @@ else
             Id = product.Id,
             Name = product.Name,
             Sku = product.Sku,
+            Image = product.Image,
             Price = product.Price,
             Description = product.Description
         };
@@ -287,6 +294,8 @@ else
         public string? Description { get; set; }
 
         public string? Sku { get; set; }
+
+        public string? Image { get; set; }
 
         public decimal? Price { get; set; }
 
