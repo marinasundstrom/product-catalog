@@ -1,0 +1,37 @@
+﻿<div>
+    <p>@Message</p>
+
+    @if (YesText is not null)
+    {
+        <button @onclick="Yes" class="btn btn-primary">@YesText</button>
+    }
+    @if (NoText is not null)
+    {
+        <button @onclick="No" class="btn btn-secondary">@NoText</button>
+    }
+    @if (CancelText is not null)
+    {
+        <button @onclick="Cancel" class="btn btn-secondary">@CancelText</button>
+    }
+
+</div>
+
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public string? Message { get; set; }
+
+    [Parameter] public string? YesText { get; set; }
+
+    [Parameter] public string? NoText { get; set; }
+
+    [Parameter] public string? CancelText { get; set; }
+
+    async Task Yes() => await BlazoredModal.CloseAsync(ModalResult.Ok(true));
+    async Task No() => await BlazoredModal.CloseAsync(ModalResult.Ok(false));
+    async Task Cancel() => await BlazoredModal.CancelAsync();
+}
+

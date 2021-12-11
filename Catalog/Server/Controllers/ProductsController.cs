@@ -34,6 +34,13 @@ namespace Catalog.Server.Controllers
             return Ok(await api.GetProduct(productId));
         }
 
+        [HttpGet("{productId}/Visibility")]
+        public async Task<ActionResult> UpdateProductVisibility(string productId, ProductVisibility visibility)
+        {
+            await api.UpdateProductVisibility(productId, visibility);
+            return Ok();
+        }
+
         [HttpPost]
         public async Task<ActionResult<ApiProduct>> CreateProduct(ApiCreateProduct data)
         {

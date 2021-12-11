@@ -95,6 +95,14 @@ public class Product
     public List<ProductOption> ProductOptions { get; } = new List<ProductOption>();
 
     public List<OptionGroup> OptionGroups { get; } = new List<OptionGroup>();
+
+    public ProductVisibility Visibility { get; set; }
+}
+
+public enum ProductVisibility
+{
+    Unlisted,
+    Listed
 }
 
 public class ProductOption
@@ -141,7 +149,7 @@ public class Option
 
     public OptionGroup? Group { get; set; }
 
-    public OptionType OptionType { get; set; } = OptionType.Values;
+    public OptionType OptionType { get; set; } = OptionType.Multiple;
 
     public bool IsRequired { get; set; }
 
@@ -164,7 +172,7 @@ public class Option
 public enum OptionType
 {
     Single,
-    Values
+    Multiple
 }
 
 public class OptionValue

@@ -15,15 +15,22 @@ public class Api
         this.context = context;
     }
 
-    public async Task<IEnumerable<ApiProduct>> GetProducts()
+    public async Task<IEnumerable<ApiProduct>> GetProducts(bool includeUnlisted = false)
     {
-        var products = await context.Products
+        var query = context.Products
             .AsSplitQuery()
             .AsNoTracking()
             .Include(pv => pv.Group)
-            .ToArrayAsync();
+            .AsQueryable();
 
-        return products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price, x.HasVariants));
+        if(!includeUnlisted)
+        {
+            query = query.Where(x => x.Visibility == Data.ProductVisibility.Listed);
+        }
+
+        var products = await query.ToArrayAsync();
+
+        return products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted));
     }
 
     public async Task<ApiProduct?> GetProduct(string productId)
@@ -36,7 +43,7 @@ public class Api
 
         if (product == null) return null;
 
-        return new ApiProduct(product.Id, product.Name, product.Description, product.SKU, product.Image, product.Price, product.HasVariants);
+        return new ApiProduct(product.Id, product.Name, product.Description, product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
     }
 
     public async Task<ApiProduct?> CreateProduct(ApiCreateProduct data)
@@ -52,14 +59,33 @@ public class Api
             Description = data.Description,
             Group = group,
             SKU = data.SKU,
-            Price = data.Price
+            Price = data.Price,
         };
+
+        if(data.Visibility == null)
+        {
+            product.Visibility = Data.ProductVisibility.Unlisted;
+        }
+        else
+        {
+            product.Visibility = data.Visibility == ProductVisibility.Listed ? Data.ProductVisibility.Listed : Data.ProductVisibility.Unlisted;
+        }
 
         context.Products.Add(product);
 
         await context.SaveChangesAsync();
 
-        return new ApiProduct(product.Id, product.Name, product.Description, product.SKU, product.Image, product.Price, product.HasVariants);
+        return new ApiProduct(product.Id, product.Name, product.Description, product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
+    }
+
+    public async Task UpdateProductVisibility(string productId, ProductVisibility visibility)
+    {
+        var product = await context.Products
+            .FirstAsync(x => x.Id == productId);
+
+        product.Visibility = visibility == ProductVisibility.Listed ? Data.ProductVisibility.Listed : Data.ProductVisibility.Unlisted;
+
+        await context.SaveChangesAsync();
     }
 
     public async Task<ApiOptionValue> CreateProductOptionValue(string productId, string optionId, ApiCreateProductOptionValue data)
@@ -99,7 +125,7 @@ public class Api
             Description = data.Description,
             SKU = data.SKU,
             Group = group,
-            OptionType = data.IsSelectable ? OptionType.Values : OptionType.Single
+            OptionType = data.OptionType == OptionType.Single ? Data.OptionType.Single : Data.OptionType.Multiple
         };
 
         foreach (var v in data.Values)
@@ -156,7 +182,7 @@ public class Api
         option.Description = data.Description;
         option.SKU = data.SKU;
         option.Group = group;
-        option.OptionType = data.IsSelectable ? OptionType.Values : OptionType.Single;
+        option.OptionType = data.OptionType == OptionType.Single ? Data.OptionType.Single : Data.OptionType.Multiple;
 
         foreach (var v in data.Values)
         {
@@ -558,20 +584,20 @@ public class Api
     }
 }
 
-public record class ApiProduct(string Id, string Name, string? Description, string? SKU, string? Image, decimal? Price, bool HasVariants);
+public record class ApiProduct(string Id, string Name, string? Description, string? SKU, string? Image, decimal? Price, bool HasVariants, ProductVisibility? Visibility);
 
-public record class ApiCreateProduct(string Name, bool HasVariants, string? Description, string? GroupId, string? SKU, decimal? Price);
+public record class ApiCreateProduct(string Name, bool HasVariants, string? Description, string? GroupId, string? SKU, decimal? Price, ProductVisibility? Visibility);
 
 
 public record class ApiOption(string Id, string Name, ApiOptionGroup? Group, bool HasValues, string? SKU, decimal? Price, bool IsSelected, IEnumerable<ApiOptionValue> Values, ApiOptionValue? DefaultValue);
 
 public record class ApiOptionValue(string Id, string Name, string? SKU, decimal? Price, int? Seq);
 
-public record class ApiCreateProductOption(string Name, string? Description, bool IsSelectable, string? SKU, decimal? Price, string? GroupId, IEnumerable<ApiCreateProductOptionValue> Values);
+public record class ApiCreateProductOption(string Name, string? Description, OptionType OptionType, string? SKU, decimal? Price, string? GroupId, IEnumerable<ApiCreateProductOptionValue> Values);
 
 public record class ApiCreateProductOptionValue(string Name, string? SKU, decimal? Price);
 
-public record class ApiUpdateProductOption(string Name, string? Description, bool IsSelectable, string? SKU, decimal? Price, string? GroupId, IEnumerable<ApiUpdateProductOptionValue> Values);
+public record class ApiUpdateProductOption(string Name, string? Description, OptionType OptionType, string? SKU, decimal? Price, string? GroupId, IEnumerable<ApiUpdateProductOptionValue> Values);
 
 public record class ApiUpdateProductOptionValue(string? Id, string Name, string? SKU, decimal? Price);
 
@@ -594,4 +620,9 @@ public record class ApiCreateProductVariantOption(string OptionId, string ValueI
 public record class ApiUpdateProductVariant(string Name, string? Description, string SKU, decimal Price, IEnumerable<ApiUpdateProductVariantOption> Options);
 
 public record class ApiUpdateProductVariantOption(int? Id, string OptionId, string ValueId);
+
+
+public enum OptionType { Single, Multiple }
+
+public enum ProductVisibility { Unlisted, Listed }
 

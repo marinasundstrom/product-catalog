@@ -22,6 +22,15 @@ else
         </label>
     *@
 
+    <div class="form-group mb-4">
+        <label>Visibility</label>
+        <MySelect TItem="ProductVisibility?" Items="@VisibilityOptions" Value="@product.Visibility" ValueChanged="async (e) => await UpdateVisibility((ProductVisibility?)e)" Selector="(x) => x">
+
+        </MySelect>
+    </div>
+
+    <h4>Options</h4>
+
     <button class="btn btn-secondary" @onclick="CreateOption">Create option</button>
 
 
@@ -30,8 +39,8 @@ else
         if (options is not null)
         {
             @foreach (var group in options
-               .ToList()
-               .GroupBy(x => x.Group?.Name))
+             .ToList()
+             .GroupBy(x => x.Group?.Name))
             {
                 <table class="table table-striped">
                     <thead>
@@ -87,7 +96,7 @@ else
                             }
                         }
 
-                       <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,24 +104,24 @@ else
                     {
                         @foreach (var variant in variants)
                         {
-                    <tr>
-                        <td>@variant.Name</td>
-                        <td>@variant.Sku</td>
-                        <td>@variant.Price?.ToString("c")</td>
+                            <tr>
+                                <td>@variant.Name</td>
+                                <td>@variant.Sku</td>
+                                <td>@variant.Price?.ToString("c")</td>
 
-                        @if (variant.Options is not null)
-                        {
-                            foreach (var option in variant.Options)
-                            {
-                                <td>@option.Value</td>
-                            }
-                        }
+                                @if (variant.Options is not null)
+                                {
+                                    foreach (var option in variant.Options)
+                                    {
+                                        <td>@option.Value</td>
+                                    }
+                                }
 
-                        <td>
-                            <a href="#" @onclick:preventDefault @onclick="async () => await UpdateVariant(variant)"><i class="oi oi-pencil"></i></a>
-                            <a href="#" @onclick:preventDefault @onclick="async () => await DeleteVariant(variant)"><i class="oi oi-trash"></i></a>
-                        </td>
-                    </tr>
+                                <td>
+                                    <a href="#" @onclick:preventDefault @onclick="async () => await UpdateVariant(variant)"><i class="oi oi-pencil"></i></a>
+                                    <a href="#" @onclick:preventDefault @onclick="async () => await DeleteVariant(variant)"><i class="oi oi-trash"></i></a>
+                                </td>
+                            </tr>
                         }
                     }
                 </tbody>
@@ -127,6 +136,8 @@ else
     List<ApiProductVariant>? variants;
     List<ApiOption>? options;
 
+    public IList<ProductVisibility?> VisibilityOptions { get; } = Enum.GetValues<ProductVisibility>().Select(x => (ProductVisibility?)x).ToArray();
+
     [Parameter]
     public string? ProductId { get; set; }
 
@@ -136,6 +147,13 @@ else
         options = (await ProductsClient.GetProductOptionsAsync(ProductId)).ToList();
 
         variants = (await ProductsClient.GetVariantsAsync(ProductId)).ToList();
+    }
+
+    async Task UpdateVisibility(ProductVisibility? value)
+    {
+        await ProductsClient.UpdateProductVisibilityAsync(ProductId, value.GetValueOrDefault());
+
+        product.Visibility = value;
     }
 
     async Task CreateOption()
@@ -171,6 +189,13 @@ else
 
     async Task DeleteOption(ApiOption option)
     {
+        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the option?", yesText: "Yes", noText: "No");
+        var modalResult = await modalRef.Result;
+        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        {
+            return;
+        }
+
         await ProductsClient.DeleteProductOptionAsync(ProductId, option.Id);
 
         options.Remove(option);
@@ -209,6 +234,13 @@ else
 
     async Task DeleteVariant(ApiProductVariant variant)
     {
+        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the variant?", yesText: "Yes", noText: "No");
+        var modalResult = await modalRef.Result;
+        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        {
+            return;
+        }
+
         await ProductsClient.DeleteVariantAsync(ProductId, variant.Id);
 
         variants.Remove(variant);

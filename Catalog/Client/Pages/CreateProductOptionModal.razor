@@ -1,5 +1,6 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @inject IProductsClient ProductsClient
+@inject IModalService ModalService
 
 <EditForm Model="@this" OnValidSubmit="OnSubmit">
     <ObjectGraphDataAnnotationsValidator />
@@ -11,8 +12,8 @@
     </div>
 
     <div class="form-check my-2">
-        <InputCheckbox class="form-check-input" @bind-Value="IsSelectable" />
-        <label class="form-check-label">Is selectable</label>
+        <InputCheckbox class="form-check-input" @bind-Value="HasMultipleChoices" />
+        <label class="form-check-label">Has multiple choices</label>
     </div>
 
     <div class="form-group">
@@ -33,7 +34,7 @@
         <ValidationMessage For="() => Price" />
     </div>
 
-    @if (IsSelectable)
+    @if (HasMultipleChoices)
     {
         <h4 class="mt-4">Values</h4>
 
@@ -70,7 +71,7 @@
                                     </td>
 
                                     <td>
-                                        <a href="#" @onclick:preventDefault @onclick="async () => DeleteValue(value)"><i class="oi oi-trash"></i></a>
+                                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteValue(value)"><i class="oi oi-trash"></i></a>
                                     </td>
                                 </tr>
                             }
@@ -92,7 +93,7 @@
     [Required]
     public string Name { get; set; }
 
-    public bool IsSelectable { get; set; }
+    public bool HasMultipleChoices { get; set; }
 
     public string Description { get; set; }
 
@@ -113,8 +114,15 @@
         Values.Add(new OptionValueVM());
     }
 
-    void DeleteValue(OptionValueVM vm)
+    async Task DeleteValue(OptionValueVM vm)
     {
+        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the value?", yesText: "Yes", noText: "No");
+        var modalResult = await modalRef.Result;
+        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        {
+            return;
+        }
+
         Values.Remove(vm);
     }
 
@@ -123,11 +131,11 @@
         var data = new ApiCreateProductOption
         {
             Name = Name,
-            IsSelectable = IsSelectable,
+            OptionType = HasMultipleChoices ? OptionType.Multiple : OptionType.Single,
             Description = Description,
             Sku = SKU,
             Price = Price,
-            Values = IsSelectable ? Values.Select(x => new ApiCreateProductOptionValue()
+            Values = HasMultipleChoices ? Values.Select(x => new ApiCreateProductOptionValue()
             {
                 Name = x.Name,
                 Sku = x.SKU,

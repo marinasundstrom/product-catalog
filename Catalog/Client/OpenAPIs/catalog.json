@@ -191,6 +191,47 @@
         }
       }
     },
+    "/api/Products/{productId}/Visibility": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "operationId": "Products_UpdateProductVisibility",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          },
+          {
+            "name": "visibility",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ProductVisibility"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Products/{productId}/Options/Groups": {
       "get": {
         "tags": [
@@ -1110,8 +1151,28 @@
           },
           "hasVariants": {
             "type": "boolean"
+          },
+          "visibility": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProductVisibility"
+              }
+            ]
           }
         }
+      },
+      "ProductVisibility": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Unlisted",
+          "Listed"
+        ],
+        "enum": [
+          0,
+          1
+        ]
       },
       "ApiCreateProduct": {
         "type": "object",
@@ -1139,6 +1200,14 @@
             "type": "number",
             "format": "decimal",
             "nullable": true
+          },
+          "visibility": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProductVisibility"
+              }
+            ]
           }
         }
       },
@@ -1176,8 +1245,8 @@
             "type": "string",
             "nullable": true
           },
-          "isSelectable": {
-            "type": "boolean"
+          "optionType": {
+            "$ref": "#/components/schemas/OptionType"
           },
           "sku": {
             "type": "string",
@@ -1199,6 +1268,18 @@
             }
           }
         }
+      },
+      "OptionType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Single",
+          "Multiple"
+        ],
+        "enum": [
+          0,
+          1
+        ]
       },
       "ApiCreateProductOptionValue": {
         "type": "object",
@@ -1229,8 +1310,8 @@
             "type": "string",
             "nullable": true
           },
-          "isSelectable": {
-            "type": "boolean"
+          "optionType": {
+            "$ref": "#/components/schemas/OptionType"
           },
           "sku": {
             "type": "string",
