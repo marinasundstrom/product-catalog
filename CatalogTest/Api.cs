@@ -60,6 +60,7 @@ public class Api
             Group = group,
             SKU = data.SKU,
             Price = data.Price,
+            HasVariants = data.HasVariants
         };
 
         if (data.Visibility == null)
