@@ -85,6 +85,13 @@ namespace Catalog.Server.Controllers
             return Ok(await api.CreateProductOptionValue(productId, optionId, data));
         }
 
+        [HttpPost("{productId}/Options/{optionId}/Values/{valueId}")]
+        public async Task<ActionResult> DeleteProductOptionValue(string productId, string optionId, string valueId)
+        {
+            await api.DeleteProductOptionValue(productId, optionId, valueId);
+            return Ok();
+        }
+
         [HttpPost("{productId}/Options/{optionId}/GetAvailableValues")]
         public async Task<ActionResult<IEnumerable<ApiOptionValue>>> GetAvailableOptionValues(string productId, string optionId, Dictionary<string, string?> selectedOptions)
         {

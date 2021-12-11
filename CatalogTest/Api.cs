@@ -218,6 +218,24 @@ public class Api
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
 
+    public async Task DeleteProductOptionValue(string productId, string optionId, string valueId)
+    {
+        var product = await context.Products
+            .AsSplitQuery()
+            .Include(pv => pv.Options)
+            .ThenInclude(pv => pv.Values)
+            .FirstAsync(p => p.Id == productId);
+
+        var option = product.Options.First(o => o.Id == optionId);
+
+        var value = option.Values.First(o => o.Id == valueId);
+
+        option.Values.Remove(value);
+        context.OptionValues.Remove(value);
+
+        await context.SaveChangesAsync();
+    }
+
     public async Task<IEnumerable<ApiOption>> GetOptions(bool includeChoices)
     {
         var query = context.Options

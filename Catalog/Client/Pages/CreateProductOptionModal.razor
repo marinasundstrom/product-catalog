@@ -48,6 +48,7 @@
                             <th>Name</th>
                             <th>SKU</th>
                             <th>Price</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,6 +67,10 @@
 
                                     <td>
                                         <InputNumber type="currency" class="form-control" @bind-Value="value.Price" />
+                                    </td>
+
+                                    <td>
+                                        <a href="#" @onclick:preventDefault @onclick="async () => DeleteValue(value)"><i class="oi oi-trash"></i></a>
                                     </td>
                                 </tr>
                             }
@@ -108,6 +113,11 @@
         Values.Add(new OptionValueVM());
     }
 
+    void DeleteValue(OptionValueVM vm)
+    {
+        Values.Remove(vm);
+    }
+
     async Task OnSubmit()
     {
         var data = new ApiCreateProductOption
@@ -117,12 +127,12 @@
             Description = Description,
             Sku = SKU,
             Price = Price,
-            Values = Values.Select(x => new ApiCreateProductOptionValue()
+            Values = IsSelectable ? Values.Select(x => new ApiCreateProductOptionValue()
             {
                 Name = x.Name,
                 Sku = x.SKU,
                 Price = x.Price
-            }).ToList()
+            }).ToList() : Array.Empty<ApiCreateProductOptionValue>().ToList()
         };
 
         var result = await ProductsClient.CreateProductOptionAsync(ProductId, data);

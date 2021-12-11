@@ -49,6 +49,7 @@
                             <th>Name</th>
                             <th>SKU</th>
                             <th>Price</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,6 +72,10 @@
                                     <td>
                                         <InputNumber type="currency" class="form-control" @bind-Value="value.Price" />
                                     </td>
+
+                                    <td>
+                                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteValue(value)"><i class="oi oi-trash"></i></a>
+                                    </td>
                                 </tr>
                             }
                     </tbody>
@@ -84,84 +89,95 @@
 </EditForm>
 
 @code {
-    [CascadingParameter] BlazoredModalInstance Modal { get; set; }
+            [CascadingParameter] BlazoredModalInstance Modal { get; set; }
 
-    [Parameter] public string ProductId { get; set; }
+            [Parameter] public string ProductId { get; set; }
 
-    [Parameter] public ApiOption Option { get; set; }
+            [Parameter] public ApiOption Option { get; set; }
 
-    [Required]
-    public string Name { get; set; }
+            [Required]
+            public string Name { get; set; }
 
     public bool IsSelectable { get; set; }
 
-    public string Description { get; set; }
-
-    public string? SKU { get; set; }
-
-    public decimal? Price { get; set; }
-
-    [ValidateComplexType]
-    public List<OptionValueVM> Values { get; set; } = new List<OptionValueVM>();
-
-    protected override void OnInitialized()
-    {
-        //Id = Option.Id;
-
-        Name = Option.Name;
-        //Description = Option.Description;
-        Price = Option.Price;
-        SKU = Option.Sku;
-        IsSelectable = Option.HasValues;
-
-        foreach (var value in Option.Values)
-        {
-            Values.Add(new OptionValueVM() {
-                Id = value.Id,
-                Name = value.Name,
-                Price = value.Price,
-                SKU = value.Sku
-            });
-        }
-    }
-
-    void AddValue()
-    {
-        Values.Add(new OptionValueVM());
-    }
-
-    async Task OnSubmit()
-    {
-        var data = new ApiUpdateProductOption
-        {
-            Name = Name,
-            IsSelectable = IsSelectable,
-            Description = Description,
-            Sku = SKU,
-            Price = Price,
-            Values = Values.Select(x => new ApiUpdateProductOptionValue()
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Sku = x.SKU,
-                Price = x.Price
-            }).ToList()
-        };
-
-        var result = await ProductsClient.UpdateProductOptionAsync(ProductId, Option.Id, data);
-        await Modal.CloseAsync(ModalResult.Ok(result));
-    }
-
-    public class OptionValueVM
-    {
-        public string? Id { get; set; }
-
-        [Required]
-        public string Name { get; set; }
+        public string Description { get; set; }
 
         public string? SKU { get; set; }
 
         public decimal? Price { get; set; }
+
+        [ValidateComplexType]
+        public List<OptionValueVM> Values { get; set; } = new List<OptionValueVM>();
+
+        protected override void OnInitialized()
+        {
+            //Id = Option.Id;
+
+            Name = Option.Name;
+            //Description = Option.Description;
+            Price = Option.Price;
+            SKU = Option.Sku;
+            IsSelectable = Option.HasValues;
+
+            foreach (var value in Option.Values)
+            {
+                Values.Add(new OptionValueVM() {
+                    Id = value.Id,
+                    Name = value.Name,
+                    Price = value.Price,
+                    SKU = value.Sku
+                });
+            }
+        }
+
+        void AddValue()
+        {
+            Values.Add(new OptionValueVM());
+        }
+
+
+        async Task DeleteValue(OptionValueVM vm)
+        {
+            if (vm.Id is not null)
+            {
+                await ProductsClient.DeleteProductOptionValueAsync(ProductId, Option.Id, vm.Id);
+            }
+
+            Values.Remove(vm);
+        }
+
+        async Task OnSubmit()
+        {
+            var data = new ApiUpdateProductOption
+            {
+                Name = Name,
+                IsSelectable = IsSelectable,
+                Description = Description,
+                Sku = SKU,
+                Price = Price,
+                Values = Values.Select(x => new ApiUpdateProductOptionValue()
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Sku = x.SKU,
+                    Price = x.Price
+                }).ToList()
+            };
+
+            var result = await ProductsClient.UpdateProductOptionAsync(ProductId, Option.Id, data);
+            await Modal.CloseAsync(ModalResult.Ok(result));
+        }
+
+        public class OptionValueVM
+        {
+            public string? Id { get; set; }
+
+            [Required]
+            public string Name { get; set; }
+
+            public string? SKU { get; set; }
+
+            public decimal? Price { get; set; }
+        }
     }
-}
 
