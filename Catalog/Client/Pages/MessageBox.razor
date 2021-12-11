@@ -1,19 +1,18 @@
 ﻿<div>
     <p>@Message</p>
 
-    @if (YesText is not null)
+    @if (CancelText is not null)
     {
-        <button @onclick="Yes" class="btn btn-primary">@YesText</button>
+        <button @onclick="Cancel" class="btn btn-secondary me-2">@CancelText</button>
     }
     @if (NoText is not null)
     {
-        <button @onclick="No" class="btn btn-secondary">@NoText</button>
+        <button @onclick="No" class="btn btn-secondary me-2">@NoText</button>
     }
-    @if (CancelText is not null)
+    @if (YesText is not null)
     {
-        <button @onclick="Cancel" class="btn btn-secondary">@CancelText</button>
+        <button @onclick="Yes" class="btn btn-primary me-2">@YesText</button>
     }
-
 </div>
 
 

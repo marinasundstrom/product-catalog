@@ -53,35 +53,39 @@
                         </tr>
                     </thead>
                     <tbody>
-                            @foreach (var value in Values)
-                            {
-                                <tr>
+                        @foreach (var value in Values)
+                        {
+                            <tr>
 
-                                    <td>
-                                        <InputText class="form-control" @bind-Value="value.Name" />
-                                        <ValidationMessage For="() => value.Name" />
-                                    </td>
+                                <td>
+                                    <InputText class="form-control" @bind-Value="value.Name" />
+                                    <ValidationMessage For="() => value.Name" />
+                                </td>
 
-                                    <td>
-                                        <InputText class="form-control" @bind-Value="value.SKU" />
-                                    </td>
+                                <td>
+                                    <InputText class="form-control" @bind-Value="value.SKU" />
+                                </td>
 
-                                    <td>
-                                        <InputNumber type="currency" class="form-control" @bind-Value="value.Price" />
-                                    </td>
+                                <td>
+                                    <InputNumber type="currency" class="form-control" @bind-Value="value.Price" />
+                                </td>
 
-                                    <td>
-                                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteValue(value)"><i class="oi oi-trash"></i></a>
-                                    </td>
-                                </tr>
-                            }
+                                <td>
+                                    <a href="#" @onclick:preventDefault @onclick="async () => await DeleteValue(value)"><i class="oi oi-trash"></i></a>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             }
         </div>
     }
 
-    <button class="btn btn-secondary mt-4">Create</button>
+    <div class="mt-4">
+        <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
+
+        <button class="btn btn-primary me-2">Create</button>
+    </div>
 
 </EditForm>
 

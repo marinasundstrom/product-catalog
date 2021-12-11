@@ -112,6 +112,16 @@
           "Products"
         ],
         "operationId": "Products_GetProducts",
+        "parameters": [
+          {
+            "name": "includeUnlisted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "x-position": 1
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -184,6 +194,49 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiProduct"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "operationId": "Products_UpdateProductDetails",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiUpdateProductDetails"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -1173,6 +1226,36 @@
           0,
           1
         ]
+      },
+      "ApiUpdateProductDetails": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
       },
       "ApiCreateProduct": {
         "type": "object",

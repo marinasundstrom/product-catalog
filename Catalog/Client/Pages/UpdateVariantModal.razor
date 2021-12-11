@@ -60,7 +60,11 @@
         }
     </div>
 
-    <button class="btn btn-secondary mt-4">Save</button>
+    <div class="mt-4">
+        <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
+
+        <button class="btn btn-primary me-2">Save</button>
+    </div>
 
 </EditForm>
 

@@ -1,0 +1,82 @@
+﻿@page "/products/list"
+@layout PageLayout
+@inject IProductsClient ProductsClient
+@inject IModalService ModalService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Products</PageTitle>
+
+<h1>Products</h1>
+
+@if (products is null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <button @onclick="CreateProduct" class="btn btn-secondary mb-2">Create product</button>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>SKU</th>
+                <th>Price</th>
+                <th>Visibility</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr style="cursor: pointer" @onclick="() => ShowProduct(product)">
+
+                    <td>
+                        @product.Name
+                    </td>
+
+                    <td>
+                        @product.Sku
+                    </td>
+
+                    <td>
+                        @product.Price?.ToString("c")
+                    </td>
+
+                    <td>
+                        @product.Visibility
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code
+{
+    IEnumerable<ApiProduct>? products = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ProductsClient.GetProductsAsync(true);
+    }
+
+    void ShowProduct(ApiProduct product)
+    {
+        NavigationManager.NavigateTo($"/products/{product.Id}");
+    }
+
+    async Task CreateProduct()
+    {
+        var modalRef = ModalService.Show<CreateProductModal>("New Product");
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        var product = (ApiProduct)result.Data;
+
+        NavigationManager.NavigateTo($"/products/{product.Id}/edit");
+
+    }
+}
+

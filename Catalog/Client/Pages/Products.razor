@@ -18,9 +18,11 @@
                 </p>
             *@
 
-            <p>
-                <button @onclick="CreateProduct" class="btn btn-secondary my-2">Create product</button>
-            </p>
+        <p>
+            <button @onclick="CreateProduct" class="btn btn-secondary my-2">Create product</button>
+            <a class="btn btn-secondary my-2" href="/products/list">View all products</a>
+
+        </p>
         </div>
     </div>
 </section>
@@ -79,7 +81,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        products = await ProductsClient.GetProductsAsync();
+        products = await ProductsClient.GetProductsAsync(false);
     }
 
     async Task CreateProduct()

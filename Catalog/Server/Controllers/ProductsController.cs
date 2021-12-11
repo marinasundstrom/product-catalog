@@ -23,15 +23,22 @@ namespace Catalog.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ApiProduct>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<ApiProduct>>> GetProducts(bool includeUnlisted = false)
         {
-            return Ok(await api.GetProducts());
+            return Ok(await api.GetProducts(includeUnlisted));
         }
 
         [HttpGet("{productId}")]
         public async Task<ActionResult<ApiProduct>> GetProduct(string productId)
         {
             return Ok(await api.GetProduct(productId));
+        }
+
+        [HttpPut("{productId}")]
+        public async Task<ActionResult> UpdateProductDetails(string productId, ApiUpdateProductDetails details)
+        {
+            await api.UpdateProductDetails(productId, details);
+            return Ok();
         }
 
         [HttpGet("{productId}/Visibility")]
