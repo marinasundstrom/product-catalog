@@ -65,7 +65,7 @@ foreach (var option in options)
 
     foreach (var value in optionValues)
     {
-        Console.WriteLine($"- {value.Value}");
+        Console.WriteLine($"- {value.Name}");
     }
 
     Console.WriteLine();

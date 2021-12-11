@@ -60,7 +60,7 @@
         }
     </div>
 
-    <button class="btn btn-secondary mt-4">Create</button>
+    <button class="btn btn-secondary mt-4">Save</button>
 
 </EditForm>
 
@@ -68,6 +68,8 @@
     [CascadingParameter] BlazoredModalInstance Modal { get; set; }
 
     [Parameter] public string ProductId { get; set; }
+
+    [Parameter] public ApiProductVariant Variant { get; set; }
 
     [Required]
     public string Name { get; set; }
@@ -84,6 +86,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Name = Variant.Name;
+        Description = Variant.Description;
+        SKU = Variant.Sku;
+        Price = Variant.Price.GetValueOrDefault();
+
         var options = await ProductsClient.GetProductOptionsAsync(ProductId);
         foreach(var option in options)
         {
@@ -98,33 +105,36 @@
             vm.Values.AddRange(
                 await ProductsClient.GetProductOptionValuesAsync(ProductId, option.Id));
 
-            vm.SelectedValue = vm.Values.FirstOrDefault();
+            var o = Variant.Options.FirstOrDefault(x => x.Name == option.Name);
+
+            vm.SelectedValue = vm.Values.FirstOrDefault(x => x.Name == o.Value);
         }
     }
 
     async Task OnSubmit()
     {
-        var data = new ApiCreateProductVariant
+        var data = new ApiUpdateProductVariant
         {
             Name = Name,
             Description = Description,
             Sku = SKU,
             Price = Price,
-            Values = new List<ApiCreateProductVariantOption>()
+            Options = new List<ApiUpdateProductVariantOption>()
         };
 
         foreach (var option in Options)
         {
-            var optionData = new ApiCreateProductVariantOption
+            var optionData = new ApiUpdateProductVariantOption
             {
+                //Id = option.Id,
                 OptionId = option.Id,
                 ValueId = option.SelectedValue.Id,
             };
 
-            data.Values.Add(optionData);
+            data.Options.Add(optionData);
         }
 
-        var result = await ProductsClient.CreateVariantAsync(ProductId, data);
+        var result = await ProductsClient.UpdateVariantAsync(ProductId, Variant.Id, data);
         await Modal.CloseAsync(ModalResult.Ok(result));
     }
 

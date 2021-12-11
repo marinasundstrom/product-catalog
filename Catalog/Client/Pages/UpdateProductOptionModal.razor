@@ -1,0 +1,167 @@
+﻿@using System.ComponentModel.DataAnnotations
+@inject IProductsClient ProductsClient
+
+<EditForm Model="@this" OnValidSubmit="OnSubmit">
+    <ObjectGraphDataAnnotationsValidator />
+
+    <div class="form-group">
+        <label>Name</label>
+        <InputText class="form-control" @bind-Value="Name" />
+        <ValidationMessage For="() => Name" />
+    </div>
+
+    <div class="form-check my-2">
+        <InputCheckbox class="form-check-input" @bind-Value="IsSelectable" />
+        <label class="form-check-label">Is selectable</label>
+    </div>
+
+    <div class="form-group">
+        <label>Description</label>
+        <InputTextArea class="form-control" @bind-Value="Description" />
+        <ValidationMessage For="() => Description" />
+    </div>
+
+    <div class="form-group">
+        <label>SKU</label>
+        <InputText class="form-control" @bind-Value="SKU" />
+        <ValidationMessage For="() => SKU" />
+    </div>
+
+    <div class="form-group">
+        <label>Price</label>
+        <InputNumber type="currency" class="form-control" @bind-Value="Price" />
+        <ValidationMessage For="() => Price" />
+    </div>
+
+    @if (IsSelectable)
+    {
+        <h4 class="mt-4">Values</h4>
+
+        <div class="form-group mb-2">
+            <button type="button" class="btn btn-secondary" @onclick="AddValue">Add value</button>
+
+            @if (Values.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>SKU</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            @foreach (var value in Values)
+                            {
+                                <tr>
+                                    <td>
+                                        @value.Id
+                                    </td>
+
+                                    <td>
+                                        <InputText class="form-control" @bind-Value="value.Name" />
+                                        <ValidationMessage For="() => value.Name" />
+                                    </td>
+
+                                    <td>
+                                        <InputText class="form-control" @bind-Value="value.SKU" />
+                                    </td>
+
+                                    <td>
+                                        <InputNumber type="currency" class="form-control" @bind-Value="value.Price" />
+                                    </td>
+                                </tr>
+                            }
+                    </tbody>
+                </table>
+            }
+        </div>
+    }
+
+    <button class="btn btn-secondary mt-4">Save</button>
+
+</EditForm>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance Modal { get; set; }
+
+    [Parameter] public string ProductId { get; set; }
+
+    [Parameter] public ApiOption Option { get; set; }
+
+    [Required]
+    public string Name { get; set; }
+
+    public bool IsSelectable { get; set; }
+
+    public string Description { get; set; }
+
+    public string? SKU { get; set; }
+
+    public decimal? Price { get; set; }
+
+    [ValidateComplexType]
+    public List<OptionValueVM> Values { get; set; } = new List<OptionValueVM>();
+
+    protected override void OnInitialized()
+    {
+        //Id = Option.Id;
+
+        Name = Option.Name;
+        //Description = Option.Description;
+        Price = Option.Price;
+        SKU = Option.Sku;
+        IsSelectable = Option.HasValues;
+
+        foreach (var value in Option.Values)
+        {
+            Values.Add(new OptionValueVM() {
+                Id = value.Id,
+                Name = value.Name,
+                Price = value.Price,
+                SKU = value.Sku
+            });
+        }
+    }
+
+    void AddValue()
+    {
+        Values.Add(new OptionValueVM());
+    }
+
+    async Task OnSubmit()
+    {
+        var data = new ApiUpdateProductOption
+        {
+            Name = Name,
+            IsSelectable = IsSelectable,
+            Description = Description,
+            Sku = SKU,
+            Price = Price,
+            Values = Values.Select(x => new ApiUpdateProductOptionValue()
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Sku = x.SKU,
+                Price = x.Price
+            }).ToList()
+        };
+
+        var result = await ProductsClient.UpdateProductOptionAsync(ProductId, Option.Id, data);
+        await Modal.CloseAsync(ModalResult.Ok(result));
+    }
+
+    public class OptionValueVM
+    {
+        public string? Id { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        public string? SKU { get; set; }
+
+        public decimal? Price { get; set; }
+    }
+}
+

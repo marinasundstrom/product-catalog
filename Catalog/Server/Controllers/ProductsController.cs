@@ -34,10 +34,55 @@ namespace Catalog.Server.Controllers
             return Ok(await api.GetProduct(productId));
         }
 
+        [HttpPost]
+        public async Task<ActionResult<ApiProduct>> CreateProduct(ApiCreateProduct data)
+        {
+            return Ok(await api.CreateProduct(data));
+        }
+
+        [HttpGet("{productId}/Options/Groups")]
+        public async Task<ActionResult<IEnumerable<ApiOptionGroup>>> GetOptionGroups(string productId)
+        {
+            return Ok(await api.GetOptionGroups(productId));
+        }
+
+        [HttpPost("{productId}/Options/Groups")]
+        public async Task<ActionResult<ApiOptionGroup>> CreateOptionGroup(string productId, ApiCreateProductOptionGroup data)
+        {
+            return Ok(await api.CreateOptionGroup(productId, data));
+        }
+
         [HttpGet("{productId}/Options")]
         public async Task<ActionResult<IEnumerable<ApiOption>>> GetProductOptions(string productId)
         {
             return Ok(await api.GetProductOptions(productId));
+        }
+
+
+        [HttpPost("{productId}/Options")]
+        public async Task<ActionResult<ApiOption>> CreateProductOption(string productId, ApiCreateProductOption data)
+        {
+            return Ok(await api.CreateProductOption(productId, data));
+        }
+
+        [HttpPut("{productId}/Options/{optionId}")]
+        public async Task<ActionResult<ApiOption>> UpdateProductOption(string productId, string optionId, ApiUpdateProductOption data)
+        {
+            return Ok(await api.UpdateProductOption(productId, optionId, data));
+        }
+
+        [HttpDelete("{productId}/Options/{optionId}")]
+        public async Task<ActionResult> DeleteProductOption(string productId, string optionId)
+        {
+            await api.DeleteProductOption(productId, optionId);
+            return Ok();
+        }
+
+        [HttpPost("{productId}/Options/{optionId}/Values")]
+        public async Task<ActionResult<ApiOptionValue>> CreateProductOptionValue(string productId, string optionId, ApiCreateProductOptionValue data)
+        {
+            
+            return Ok(await api.CreateProductOptionValue(productId, optionId, data));
         }
 
         [HttpPost("{productId}/Options/{optionId}/GetAvailableValues")]
@@ -56,6 +101,13 @@ namespace Catalog.Server.Controllers
         public async Task<ActionResult<IEnumerable<ApiProductVariant>>> GetVariants(string productId)
         {
             return Ok(await api.GetProductVariants(productId));
+        }
+
+        [HttpDelete("{productId}/Variants/{variantId}")]
+        public async Task<ActionResult> DeleteVariant(string productId, string variantId)
+        {
+            await api.DeleteVariant(productId, variantId);
+            return Ok();
         }
 
         [HttpGet("{productId}/Variants/{variantId}")]
@@ -80,6 +132,12 @@ namespace Catalog.Server.Controllers
         public async Task<ActionResult<ApiProductVariant>> CreateVariant(string productId, ApiCreateProductVariant variant)
         {
             return Ok(await api.CreateVariant(productId, variant));
+        }
+
+        [HttpPut("{productId}/Variants/{variantId}")]
+        public async Task<ActionResult<ApiProductVariant>> UpdateVariant(string productId, string variantId, ApiUpdateProductVariant data)
+        {
+            return Ok(await api.UpdateVariant(productId, variantId, data));
         }
     }
 }

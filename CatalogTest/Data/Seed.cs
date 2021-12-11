@@ -194,7 +194,7 @@ public class Seed
 
         option2.Values.Add(valueRed);
 
-        /*
+        ///*
 
         var variantBlueSmall = new ProductVariant()
         {
@@ -219,7 +219,7 @@ public class Seed
 
         product.Variants.Add(variantBlueSmall);
 
-        */
+        //*/
 
         var variantBlueMedium = new ProductVariant()
         {
@@ -461,6 +461,8 @@ public class Seed
 
         context.Products.Add(product);
 
+        await context.SaveChangesAsync();
+
         var breadGroup = new OptionGroup()
         {
             Id = Guid.NewGuid().ToString(),
@@ -468,7 +470,7 @@ public class Seed
             Name = "Bread"
         };
 
-        context.OptionGroups.Add(breadGroup);
+        product.OptionGroups.Add(breadGroup);
 
         var meatGroup = new OptionGroup()
         {
@@ -478,7 +480,7 @@ public class Seed
             Max = 2
         };
 
-        context.OptionGroups.Add(meatGroup);
+        product.OptionGroups.Add(meatGroup);
 
         var nonMeatGroup = new OptionGroup()
         {
@@ -487,7 +489,7 @@ public class Seed
             Name = "Non-Meat"
         };
 
-        context.OptionGroups.Add(nonMeatGroup);
+        product.OptionGroups.Add(nonMeatGroup);
 
         var sauceGroup = new OptionGroup()
         {
@@ -496,7 +498,7 @@ public class Seed
             Name = "Sauce"
         };
 
-        context.OptionGroups.Add(sauceGroup);
+        product.OptionGroups.Add(sauceGroup);
 
         var toppingsGroup = new OptionGroup()
         {
@@ -505,7 +507,7 @@ public class Seed
             Name = "Toppings"
         };
 
-        context.OptionGroups.Add(toppingsGroup);
+        product.OptionGroups.Add(toppingsGroup);
 
         await context.SaveChangesAsync();
 
@@ -613,7 +615,7 @@ public class Seed
             Name = "Bas"
         };
 
-        context.OptionGroups.Add(baseGroup);
+        product.OptionGroups.Add(baseGroup);
 
         var proteinGroup = new OptionGroup()
         {
@@ -623,7 +625,7 @@ public class Seed
             Max = 1
         };
 
-        context.OptionGroups.Add(proteinGroup);
+        product.OptionGroups.Add(proteinGroup);
 
         var additionalGroup = new OptionGroup()
         {
@@ -633,7 +635,7 @@ public class Seed
             Max = 3
         };
 
-        context.OptionGroups.Add(additionalGroup);
+        product.OptionGroups.Add(additionalGroup);
 
         var dressingGroup = new OptionGroup()
         {
@@ -643,7 +645,7 @@ public class Seed
             Max = 1
         };
 
-        context.OptionGroups.Add(dressingGroup);
+        product.OptionGroups.Add(dressingGroup);
 
         await context.SaveChangesAsync();
 

@@ -1,5 +1,8 @@
-﻿@page "/products"
+﻿@page "/"
+@page "/products"
 @inject IProductsClient ProductsClient
+@inject IModalService ModalService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Products</PageTitle>
 
@@ -14,6 +17,10 @@
                     <a href="#" class="btn btn-secondary my-2">Secondary action</a>
                 </p>
             *@
+
+            <p>
+                <button @onclick="CreateProduct" class="btn btn-secondary my-2">Create product</button>
+            </p>
         </div>
     </div>
 </section>
@@ -32,7 +39,7 @@
                 {
                     <div class="col">
                         <div class="card shadow-sm">
-                            @if(product.Image is not null)
+                            @if (product.Image is not null)
                             {
                                 <img class="bd-placeholder-img card-img-top" style="width: 100%; height: 225px" src="@product.Image" />
                             }
@@ -73,6 +80,20 @@
     protected override async Task OnInitializedAsync()
     {
         products = await ProductsClient.GetProductsAsync();
+    }
+
+    async Task CreateProduct()
+    {
+        var modalRef = ModalService.Show<CreateProductModal>("New Product");
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        var product = (ApiProduct)result.Data;
+
+        NavigationManager.NavigateTo($"/products/{product.Id}/edit");
+
     }
 }
 

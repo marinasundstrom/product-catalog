@@ -1,0 +1,83 @@
+﻿@using System.ComponentModel.DataAnnotations
+@inject IProductsClient ProductsClient
+
+<EditForm Model="@this" OnValidSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="form-group my-2">
+        <label>Name</label>
+        <InputText class="form-control" @bind-Value="Name" />
+        <ValidationMessage For="() => Name" />
+    </div>
+
+    <div class="form-check">
+        <InputCheckbox class="form-check-input" @bind-Value="HasVariants" />
+        <label class="form-check-label">Has variants</label>
+    </div>
+
+    <div class="form-group">
+        <label>Description</label>
+        <InputTextArea class="form-control" @bind-Value="Description" />
+        <ValidationMessage For="() => Description" />
+    </div>
+
+    <div class="form-group">
+        <label>SKU</label>
+        <InputText class="form-control" @bind-Value="SKU" />
+        <ValidationMessage For="() => SKU" />
+    </div>
+
+    <div class="form-group">
+        <label>Price</label>
+        <InputNumber type="currency" class="form-control" @bind-Value="Price" />
+        <ValidationMessage For="() => Price" />
+    </div>
+
+    <button class="btn btn-secondary mt-4">Create</button>
+
+</EditForm>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance Modal { get; set; }
+
+    [Required]
+    public string Name { get; set; }
+
+    public bool HasVariants { get; set; }
+
+    public string? Description { get; set; }
+
+    public string? SKU { get; set; }
+
+    public decimal? Price { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    async Task OnSubmit()
+    {
+        ApiCreateProduct data = new () {
+            Name = Name,
+            HasVariants = HasVariants,
+            Description = Description,
+            Sku = SKU,
+            Price = Price
+        };
+        var result = await ProductsClient.CreateProductAsync(data);
+        await Modal.CloseAsync(ModalResult.Ok(result));
+    }
+
+    public class OptionVM
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+
+        public ApiOptionValue SelectedValue { get; set; }
+
+        public List<ApiOptionValue> Values { get; set; } = new List<ApiOptionValue>();
+    }
+}
+

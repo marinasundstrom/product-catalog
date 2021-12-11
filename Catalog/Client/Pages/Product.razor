@@ -160,31 +160,17 @@ else
 {
     async Task Update(ProductVM product, OptionVM option)
     {
-        /*
-        var selectedOptions = product.OptionGroups
-            .SelectMany(x => x.Options)
-            .Where(x => x.SelectedValue is not null)
-            .ToDictionary(x => x.Id, x => x.SelectedValue!.Value);
-
-        var options = await ProductsClient.HasOptionValuesAsync(product.Id, option.Id, selectedOptions);
-
-        foreach (var o in options)
-        {
-            Console.WriteLine(o.Value);
-        }
-        */
-
         var selectedOptions = product.OptionGroups
            .SelectMany(x => x.Options)
            .Where(x => x.SelectedValue is not null)
-           .ToDictionary(x => x.Id, x => x.SelectedValue!.Value);
+           .ToDictionary(x => x.Id, x => x.SelectedValue!.Id);
 
         variant = await ProductsClient.FindVariantByOptionValuesAsync(product.Id, selectedOptions);
     }
 
     string Selector(OptionValueVM optionValue)
     {
-        return $"{optionValue.Value}{(optionValue.Price is null ? null : $" + {optionValue.Price?.ToString("c")}")}";
+        return $"{optionValue.Name}{(optionValue.Price is null ? null : $" + {optionValue.Price?.ToString("c")}")}";
     }
 
     ProductVM? vm = null;
@@ -244,7 +230,7 @@ else
 
                     groupVm.Options.Add(optionVm);
 
-                    var values = await ProductsClient.GetProductOptionValuesAsync(ProductId, option.Id);
+                    var values = option.Values;
 
                     optionsValues[option.Id] = values;
 
@@ -253,7 +239,7 @@ else
                         OptionValueVM optionValueVm = new()
                         {
                             Id = value.Id,
-                            Value = value.Value,
+                            Name = value.Name,
                             Price = value.Price
                         };
 
@@ -344,7 +330,7 @@ else
     {
         public string Id { get; set; }
 
-        public string Value { get; set; }
+        public string Name { get; set; }
 
         public decimal? Price { get; set; }
     }

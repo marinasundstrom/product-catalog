@@ -15,10 +15,53 @@ else
 
     <h3>@product.Name</h3>
 
-    <label>
-        <input type="checkbox" @bind-value="product.HasVariants" checked="@product.HasVariants" />
-        Has variants
-    </label>
+    @*
+        <label>
+            <input type="checkbox" @bind-value="product.HasVariants" checked="@product.HasVariants" />
+            Has variants
+        </label>
+    *@
+
+    <button class="btn btn-secondary" @onclick="CreateOption">Create option</button>
+
+
+    @if (options is not null)
+    {
+        if (options is not null)
+        {
+            @foreach (var group in options
+               .ToList()
+               .GroupBy(x => x.Group?.Name))
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>@(group.Key ?? "Option")</th>
+                            <th>Is selectable</th>
+                            <th>Values</th>
+                            <th>Default value</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var option in group)
+                        {
+                            <tr>
+                                <td>@option.Name</td>
+                                <td>@(!option.HasValues)</td>
+                                <td>@string.Join(", ", option.Values.Select(x => x.Name))</td>
+                                <td>@option.DefaultValue?.Name</td>
+                                <td>
+                                    <a href="#" @onclick:preventDefault @onclick="async () => await UpdateOption(option)"><i class="oi oi-pencil"></i></a>
+                                    <a href="#" @onclick:preventDefault @onclick="async () => await DeleteOption(option)"><i class="oi oi-trash"></i></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+    }
 
     @if (product.HasVariants)
     {
@@ -43,6 +86,8 @@ else
                                 <th>@option.Name</th>
                             }
                         }
+
+                       <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,19 +95,24 @@ else
                     {
                         @foreach (var variant in variants)
                         {
-                            <tr>
-                                <td>@variant.Description</td>
-                                <td>@variant.Sku</td>
-                                <td>@variant.Price?.ToString("c")</td>
+                    <tr>
+                        <td>@variant.Name</td>
+                        <td>@variant.Sku</td>
+                        <td>@variant.Price?.ToString("c")</td>
 
-                                @if (variant.Options is not null)
-                                {
-                                    foreach (var option in variant.Options)
-                                    {
-                                        <td>@option.Value</td>
-                                    }
-                                }
-                            </tr>
+                        @if (variant.Options is not null)
+                        {
+                            foreach (var option in variant.Options)
+                            {
+                                <td>@option.Value</td>
+                            }
+                        }
+
+                        <td>
+                            <a href="#" @onclick:preventDefault @onclick="async () => await UpdateVariant(variant)"><i class="oi oi-pencil"></i></a>
+                            <a href="#" @onclick:preventDefault @onclick="async () => await DeleteVariant(variant)"><i class="oi oi-trash"></i></a>
+                        </td>
+                    </tr>
                         }
                     }
                 </tbody>
@@ -75,6 +125,7 @@ else
 {
     ApiProduct? product;
     List<ApiProductVariant>? variants;
+    List<ApiOption>? options;
 
     [Parameter]
     public string? ProductId { get; set; }
@@ -82,7 +133,47 @@ else
     protected override async Task OnInitializedAsync()
     {
         product = await ProductsClient.GetProductAsync(ProductId);
+        options = (await ProductsClient.GetProductOptionsAsync(ProductId)).ToList();
+
         variants = (await ProductsClient.GetVariantsAsync(ProductId)).ToList();
+    }
+
+    async Task CreateOption()
+    {
+        ModalParameters parameters = new();
+        parameters.Add(nameof(CreateVariantModal.ProductId), ProductId);
+
+        var modalRef = ModalService.Show<CreateProductOptionModal>("New Option", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        options.Add((ApiOption)result.Data);
+    }
+
+    async Task UpdateOption(ApiOption option)
+    {
+        ModalParameters parameters = new();
+        parameters.Add(nameof(UpdateProductOptionModal.ProductId), ProductId);
+        parameters.Add(nameof(UpdateProductOptionModal.Option), option);
+
+        var modalRef = ModalService.Show<UpdateProductOptionModal>("Update Option", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        var index = options!.IndexOf(option);
+
+        options[index] = (ApiOption)result.Data;
+    }
+
+    async Task DeleteOption(ApiOption option)
+    {
+        await ProductsClient.DeleteProductOptionAsync(ProductId, option.Id);
+
+        options.Remove(option);
     }
 
     async Task CreateVariant()
@@ -97,6 +188,30 @@ else
         if (result.Cancelled) return;
 
         variants.Add((ApiProductVariant)result.Data);
+    }
+
+    async Task UpdateVariant(ApiProductVariant variant)
+    {
+        ModalParameters parameters = new();
+        parameters.Add(nameof(UpdateVariantModal.ProductId), ProductId);
+        parameters.Add(nameof(UpdateVariantModal.Variant), variant);
+
+        var modalRef = ModalService.Show<UpdateVariantModal>("Update Variant", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        var index = variants!.IndexOf(variant);
+
+        variants[index] = (ApiProductVariant)result.Data;
+    }
+
+    async Task DeleteVariant(ApiProductVariant variant)
+    {
+        await ProductsClient.DeleteVariantAsync(ProductId, variant.Id);
+
+        variants.Remove(variant);
     }
 
     class ProductVariantVm

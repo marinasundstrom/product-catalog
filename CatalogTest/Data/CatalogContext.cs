@@ -76,7 +76,7 @@ public class Product
 
     public ProductGroup? Group { get; set; }
 
-    public string Description { get; set; } = null!;
+    public string? Description { get; set; } = null!;
 
     public string? SKU { get; set; }
 
@@ -93,6 +93,8 @@ public class Product
     public List<Option> Options { get; } = new List<Option>();
 
     public List<ProductOption> ProductOptions { get; } = new List<ProductOption>();
+
+    public List<OptionGroup> OptionGroups { get; } = new List<OptionGroup>();
 }
 
 public class ProductOption
@@ -119,6 +121,8 @@ public class OptionGroup
     public string Name { get; set; } = null!;
 
     public string? Description { get; set; }
+
+    public Product? Product { get; set; }
 
     public List<Option> Options { get; } = new List<Option>();
 
