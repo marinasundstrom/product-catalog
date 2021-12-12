@@ -23,6 +23,7 @@ else
                 <th>SKU</th>
                 <th>Price</th>
                 <th>Visibility</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -44,6 +45,10 @@ else
 
                     <td>
                         @product.Visibility
+                    </td>
+
+                    <td>
+                        <a href="/products/@product.Id/edit" @onclick:stopPropagation><i class="oi oi-pencil"></i></a>
                     </td>
                 </tr>
             }
