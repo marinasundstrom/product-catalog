@@ -4,7 +4,7 @@ Flexible product catalog with Web API.
 
 Based on Products with Options (with values). Also supports Product Variants.
 
-Watch [video](https://www.youtube.com/watch?v=dhdBTNMx4dQ)
+Watch [video](https://www.youtube.com/watch?v=4WSa6pAZUbk)
 
 ## Description
 
