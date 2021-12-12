@@ -2,6 +2,7 @@
 @layout PageLayout
 @inject IProductsClient ProductsClient
 @inject IModalService ModalService
+@inject IToastService ToastService
 
 <PageTitle>Product</PageTitle>
 
@@ -61,8 +62,8 @@ else
         if (options is not null)
         {
             @foreach (var group in options
-          .ToList()
-          .GroupBy(x => x.Group?.Name))
+         .ToList()
+         .GroupBy(x => x.Group?.Name))
             {
                 <table class="table table-striped">
                     <thead>
@@ -180,9 +181,18 @@ else
 
     async Task UpdateVisibility(ProductVisibility? value)
     {
-        await ProductsClient.UpdateProductVisibilityAsync(ProductId, value.GetValueOrDefault());
+        try
+        {
+            await ProductsClient.UpdateProductVisibilityAsync(ProductId, value.GetValueOrDefault());
 
-        product.Visibility = value;
+            product.Visibility = value;
+
+            ToastService.ShowInfo($"The product \"{product.Name}\" is now {product.Visibility.ToString().ToLower()}.");
+        }
+        catch (Exception exc)
+        {
+            ToastService.ShowError(exc.Message, "Exception");
+        }
     }
 
     async Task CreateOption()
