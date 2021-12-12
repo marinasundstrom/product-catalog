@@ -144,6 +144,7 @@ public class Api
             Description = data.Description,
             SKU = data.SKU,
             Group = group,
+            Price = data.Price,
             OptionType = data.OptionType == OptionType.Single ? Data.OptionType.Single : Data.OptionType.Multiple
         };
 
@@ -202,6 +203,7 @@ public class Api
         option.Description = data.Description;
         option.SKU = data.SKU;
         option.Group = group;
+        option.Price = data.Price;
         option.OptionType = data.OptionType == OptionType.Single ? Data.OptionType.Single : Data.OptionType.Multiple;
 
         foreach (var v in data.Values)
