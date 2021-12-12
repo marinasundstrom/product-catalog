@@ -66,6 +66,19 @@ namespace Catalog.Server.Controllers
             return Ok(await api.CreateOptionGroup(productId, data));
         }
 
+        [HttpPut("{productId}/Options/Groups/{optionGroupId}")]
+        public async Task<ActionResult<ApiOptionGroup>> UpdateOptionGroup(string productId, string optionGroupId, ApiUpdateProductOptionGroup data)
+        {
+            return Ok(await api.UpdateOptionGroup(productId, optionGroupId, data));
+        }
+
+        [HttpDelete("{productId}/Options/Groups/{optionGroupId}")]
+        public async Task<ActionResult> DeleteOptionGroup(string productId, string optionGroupId)
+        {
+            await api.DeleteOptionGroup(productId, optionGroupId);
+            return Ok();
+        }
+
         [HttpGet("{productId}/Options")]
         public async Task<ActionResult<IEnumerable<ApiOption>>> GetProductOptions(string productId)
         {

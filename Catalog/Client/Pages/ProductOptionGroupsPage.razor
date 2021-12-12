@@ -1,0 +1,105 @@
+﻿@page "/products/{productId}/options/groups"
+@layout PageLayout
+@inject IProductsClient ProductsClient
+@inject IModalService ModalService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Products</PageTitle>
+
+@if (product is null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <PageTitle>@product.Name (@product.Sku)</PageTitle>
+
+    <h1>Option Groups</h1>
+
+    <button class="btn btn-secondary my-2" @onclick="CreateGroup"><i class="oi oi-plus" /> Create group</button>
+
+    @if (optionGroups is not null)
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var group in optionGroups)
+                {
+                    <tr>
+                        <td>@group.Name</td>
+                        <td>
+                            <a href="#" @onclick:preventDefault @onclick="async () => await UpdateGroup(group)"><i class="oi oi-pencil"></i></a>
+                            <a href="#" @onclick:preventDefault @onclick="async () => await DeleteGroup(group)"><i class="oi oi-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code
+{
+    ApiProduct? product;
+    List<ApiOptionGroup>? optionGroups;
+
+    [Parameter]
+    public string? ProductId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await ProductsClient.GetProductAsync(ProductId);
+        optionGroups = (await ProductsClient.GetOptionGroupsAsync(ProductId)).ToList();
+    }
+
+    async Task CreateGroup()
+    {
+        ModalParameters parameters = new();
+        parameters.Add(nameof(CreateProductOptionGroupModal.ProductId), ProductId);
+
+        var modalRef = ModalService.Show<CreateProductOptionGroupModal>("Create Group", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        optionGroups.Add((ApiOptionGroup)result.Data);
+    }
+
+    async Task UpdateGroup(ApiOptionGroup optionGroup)
+    {
+        ModalParameters parameters = new();
+        parameters.Add(nameof(UpdateProductOptionGroupModal.ProductId), ProductId);
+        parameters.Add(nameof(UpdateProductOptionGroupModal.OptionGroup), optionGroup);
+
+        var modalRef = ModalService.Show<UpdateProductOptionGroupModal>("Update Group", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        var index = optionGroups!.IndexOf(optionGroup);
+
+        optionGroups[index] = (ApiOptionGroup)result.Data;
+    }
+
+    async Task DeleteGroup(ApiOptionGroup optionGroup)
+    {
+        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the group?", yesText: "Yes", noText: "No");
+        var modalResult = await modalRef.Result;
+        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        {
+            return;
+        }
+
+        await ProductsClient.DeleteOptionGroupAsync(ProductId, optionGroup.Id);
+
+        optionGroups.Remove(optionGroup);
+    }
+}
+

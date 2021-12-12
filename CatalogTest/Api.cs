@@ -357,6 +357,40 @@ public class Api
         return new ApiOptionGroup(group.Id, group.Name, group.Seq, group.Min, group.Max);
     }
 
+    public async Task<ApiOptionGroup?> UpdateOptionGroup(string productId, string optionGroupId, ApiUpdateProductOptionGroup data)
+    {
+        var product = await context.Products
+            .Include(x => x.OptionGroups)
+            .FirstAsync(x => x.Id == productId);
+
+        var optionGroup = product.OptionGroups
+            .First(x => x.Id == optionGroupId);
+
+        optionGroup.Name = data.Name;
+        optionGroup.Description = data.Description;
+        optionGroup.Min = data.Min;
+        optionGroup.Max = data.Max;
+
+        await context.SaveChangesAsync();
+
+        return new ApiOptionGroup(optionGroup.Id, optionGroup.Name, optionGroup.Seq, optionGroup.Min, optionGroup.Max);
+    }
+
+    public async Task DeleteOptionGroup(string productId, string optionGroupId)
+    {
+        var product = await context.Products
+            .Include(x => x.OptionGroups)
+            .FirstAsync(x => x.Id == productId);
+
+        var optionGroup = product.OptionGroups
+            .First(x => x.Id == optionGroupId);
+
+        product.OptionGroups.Remove(optionGroup);
+        context.OptionGroups.Remove(optionGroup);
+
+        await context.SaveChangesAsync();
+    }
+
     public async Task<ApiProductVariant> CreateVariant(string productId, ApiCreateProductVariant data)
     {
         var product = await context.Products
@@ -631,6 +665,8 @@ public record class ApiUpdateProductOptionValue(string? Id, string Name, string?
 public record class ApiOptionGroup(string Id, string Name, int? Seq, int? Min, int? Max);
 
 public record class ApiCreateProductOptionGroup(string Name, string? Description, int? Min, int? Max);
+
+public record class ApiUpdateProductOptionGroup(string Name, string? Description, int? Min, int? Max);
 
 
 public record class ApiProductVariant(string Id, string Name, string? Description, string? SKU, string? Image, decimal? Price, IEnumerable<ApiProductVariantOption> Options);

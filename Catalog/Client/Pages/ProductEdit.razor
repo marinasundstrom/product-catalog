@@ -54,44 +54,43 @@ else
 
     <h4>Options</h4>
 
-    <button class="btn btn-secondary" @onclick="CreateOption"><i class="oi oi-plus" /> Create option</button>
+    <div>
+        <button class="btn btn-secondary me-2" @onclick="CreateOption"><i class="oi oi-plus" /> Create option</button>
+        <a class="btn btn-secondary" href="/products/@product.Id/options/groups">Option groups</a>
+    </div>
 
-
-    @if (options is not null)
+    if (options is not null)
     {
-        if (options is not null)
+        @foreach (var group in options
+    .ToList()
+    .GroupBy(x => x.Group?.Name))
         {
-            @foreach (var group in options
-         .ToList()
-         .GroupBy(x => x.Group?.Name))
-            {
-                <table class="table table-striped">
-                    <thead>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>@(group.Key ?? "Option")</th>
+                        <th>Multiple values</th>
+                        <th>Values</th>
+                        <th>Default value</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var option in group)
+                    {
                         <tr>
-                            <th>@(group.Key ?? "Option")</th>
-                            <th>Multiple values</th>
-                            <th>Values</th>
-                            <th>Default value</th>
-                            <th></th>
+                            <td>@option.Name</td>
+                            <td>@(option.OptionType == OptionType.Multiple)</td>
+                            <td>@string.Join(", ", option.Values.Select(x => x.Name))</td>
+                            <td>@option.DefaultValue?.Name</td>
+                            <td>
+                                <a href="#" @onclick:preventDefault @onclick="async () => await UpdateOption(option)"><i class="oi oi-pencil"></i></a>
+                                <a href="#" @onclick:preventDefault @onclick="async () => await DeleteOption(option)"><i class="oi oi-trash"></i></a>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var option in group)
-                        {
-                            <tr>
-                                <td>@option.Name</td>
-                                <td>@(option.OptionType == OptionType.Multiple)</td>
-                                <td>@string.Join(", ", option.Values.Select(x => x.Name))</td>
-                                <td>@option.DefaultValue?.Name</td>
-                                <td>
-                                    <a href="#" @onclick:preventDefault @onclick="async () => await UpdateOption(option)"><i class="oi oi-pencil"></i></a>
-                                    <a href="#" @onclick:preventDefault @onclick="async () => await DeleteOption(option)"><i class="oi oi-trash"></i></a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
+                    }
+                </tbody>
+            </table>
         }
     }
 

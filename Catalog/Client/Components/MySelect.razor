@@ -9,7 +9,7 @@
         }
         @foreach (var (id, item) in idDictionary)
         {
-            <option value="@id" selected="@(item.Equals(Value))">@Selector(item).ToString()</option>
+            <option value="@id" selected="@(object.Equals(item, Value))">@Selector(item).ToString()</option>
         }
     </select>
 </div>

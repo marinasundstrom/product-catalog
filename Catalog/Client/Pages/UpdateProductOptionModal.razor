@@ -25,6 +25,15 @@
         <ValidationMessage For="() => Description" />
     </div>
 
+    @if (Groups is not null)
+    {
+        <div class="form-group">
+            <label>Group</label>
+            <MySelect Items="Groups" ShowDefaultOption="true" @bind-Value="Group" Selector="(x) => x?.Name" />
+            <ValidationMessage For="() => Group" />
+        </div>
+    }
+
     @if (!Product.HasVariants)
     {
         <div class="form-group">
@@ -100,6 +109,8 @@
 </EditForm>
 
 @code {
+    IList<ApiOptionGroup?> Groups { get; set; }
+
     [CascadingParameter] BlazoredModalInstance Modal { get; set; }
 
     [Parameter] public string ProductId { get; set; }
@@ -115,6 +126,8 @@
 
     public string Description { get; set; }
 
+    public ApiOptionGroup? Group { get; set; }
+
     public string? SKU { get; set; }
 
     public decimal? Price { get; set; }
@@ -122,12 +135,13 @@
     [ValidateComplexType]
     public List<OptionValueVM> Values { get; set; } = new List<OptionValueVM>();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        //Id = Option.Id;
+        Groups = (await ProductsClient.GetOptionGroupsAsync(ProductId)).Prepend(new ApiOptionGroup { Id = null, Name = "None" }).ToList();
 
         Name = Option.Name;
-        //Description = Option.Description;
+        Description = Option.Description;
+        Group = Groups.FirstOrDefault(x => x?.Id == Option.Group?.Id);
         Price = Option.Price;
         SKU = Option.Sku;
         HasMultipleChoices = Option.OptionType == OptionType.Multiple;
@@ -174,6 +188,7 @@
             Name = Name,
             OptionType = HasMultipleChoices ? OptionType.Multiple : OptionType.Single,
             Description = Description,
+            GroupId = Group?.Id,
             Sku = SKU,
             Price = Price,
             Values = Values.Select(x => new ApiUpdateProductOptionValue()
