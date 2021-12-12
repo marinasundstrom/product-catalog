@@ -111,7 +111,12 @@
 
             var o = Variant.Options.FirstOrDefault(x => x.Name == option.Name);
 
-            vm.SelectedValue = vm.Values.FirstOrDefault(x => x.Name == o.Value);
+            vm.SelectedValue = vm.Values.FirstOrDefault(x => x.Name == o?.Value);
+
+            if(vm.SelectedValue is null)
+            {
+                vm.SelectedValue = vm.Values.FirstOrDefault();
+            }
         }
     }
 
@@ -132,7 +137,7 @@
             {
                 //Id = option.Id,
                 OptionId = option.Id,
-                ValueId = option.SelectedValue.Id,
+                ValueId = option.SelectedValue?.Id,
             };
 
             data.Options.Add(optionData);
