@@ -67,6 +67,7 @@
             Sku = SKU,
             Price = Price
         };
+
         var result = await ProductsClient.CreateProductAsync(data);
         await Modal.CloseAsync(ModalResult.Ok(result));
     }

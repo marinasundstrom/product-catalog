@@ -1,5 +1,6 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @inject IProductsClient ProductsClient
+@inject IToastService ToastService
 
 <EditForm Model="@this" OnValidSubmit="OnSubmit">
     <DataAnnotationsValidator />
@@ -89,7 +90,7 @@
     protected override async Task OnInitializedAsync()
     {
         var options = await ProductsClient.GetProductOptionsAsync(ProductId);
-        foreach(var option in options)
+        foreach (var option in options)
         {
             var vm = new OptionVM()
             {
@@ -128,8 +129,15 @@
             data.Values.Add(optionData);
         }
 
-        var result = await ProductsClient.CreateVariantAsync(ProductId, data);
-        await Modal.CloseAsync(ModalResult.Ok(result));
+        try
+        {
+            var result = await ProductsClient.CreateVariantAsync(ProductId, data);
+            await Modal.CloseAsync(ModalResult.Ok(result));
+        }
+        catch (ApiException<ProblemDetails> exc)
+        {
+            ToastService.ShowError(exc.Result.Detail);
+        }
     }
 
     public class OptionVM

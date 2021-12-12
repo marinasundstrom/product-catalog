@@ -396,6 +396,13 @@ public class Api
 
     public async Task<ApiProductVariant> CreateVariant(string productId, ApiCreateProductVariant data)
     {
+        var match = await FindVariantCore(productId, null, data.Values.ToDictionary(x => x.OptionId, x => x.ValueId));
+
+        if(match is not null)
+        {
+            throw new VariantAlreadyExistsException("Variant with the same options already exists.");
+        }
+
         var product = await context.Products
             .AsSplitQuery()
             .Include(pv => pv.Variants)
@@ -455,6 +462,13 @@ public class Api
 
     public async Task<ApiProductVariant> UpdateVariant(string productId, string productVariantId, ApiUpdateProductVariant data)
     {
+        var match = await FindVariantCore(productId, productVariantId, data.Options.ToDictionary(x => x.OptionId, x => x.ValueId));
+
+        if (match is not null)
+        {
+            throw new VariantAlreadyExistsException("Variant with the same options already exists.");
+        }
+
         var product = await context.Products
             .AsSplitQuery()
             .Include(pv => pv.Variants)
@@ -570,6 +584,7 @@ public class Api
 
     public async Task<ApiProductVariant?> FindProductVariant(string productId, Dictionary<string, string?> selectedOptions)
     {
+        /*
         IEnumerable<ProductVariant> variants = await context.ProductVariants
             .AsSplitQuery()
             .AsNoTracking()
@@ -590,6 +605,9 @@ public class Api
         }
 
         var x = variants.SingleOrDefault((ProductVariant?)null);
+        */
+
+        var x = await FindVariantCore(productId, null, selectedOptions);
 
         if (x is null) return null;
 
@@ -642,6 +660,38 @@ public class Api
 
         return values.Select(x => new ApiOptionValue(x.Id, x.Name, x.Name, x.Price, x.Seq));
     }
+
+    private async Task<ProductVariant?> FindVariantCore(string productId, string? productVariantId, IDictionary<string , string?> selectedOptions)
+    {
+        var query = context.ProductVariants
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Include(pv => pv.Product)
+            .Include(pv => pv.Values)
+            .ThenInclude(pv => pv.Option)
+            .Include(pv => pv.Values)
+            .ThenInclude(pv => pv.Value)
+            .Where(pv => pv.Product.Id == productId)
+            .AsQueryable();
+
+        if(productVariantId is not null)
+        {
+            query = query.Where(pv => pv.Id != productVariantId);
+        }
+
+        IEnumerable<ProductVariant> variants = await query
+            .ToArrayAsync();
+
+        foreach (var selectedOption in selectedOptions)
+        {
+            if (selectedOption.Value is null)
+                continue;
+
+            variants = variants.Where(x => x.Values.Any(vv => vv.Option.Id == selectedOption.Key && vv.Value.Id == selectedOption.Value));
+        }
+
+        return variants.SingleOrDefault((ProductVariant?)null);
+    }
 }
 
 public record class ApiProduct(string Id, string Name, string? Description, string? SKU, string? Image, decimal? Price, bool HasVariants, ProductVisibility? Visibility);
@@ -685,6 +735,12 @@ public record class ApiCreateProductVariantOption(string OptionId, string ValueI
 public record class ApiUpdateProductVariant(string Name, string? Description, string SKU, decimal Price, IEnumerable<ApiUpdateProductVariantOption> Options);
 
 public record class ApiUpdateProductVariantOption(int? Id, string OptionId, string ValueId);
+
+
+public class VariantAlreadyExistsException : Exception
+{
+    public VariantAlreadyExistsException(string message) : base(message) { }
+}
 
 
 public enum OptionType { Single, Multiple }

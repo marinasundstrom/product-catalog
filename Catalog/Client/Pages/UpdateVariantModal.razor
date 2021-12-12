@@ -1,5 +1,6 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @inject IProductsClient ProductsClient
+@inject IToastService ToastService
 
 <EditForm Model="@this" OnValidSubmit="OnSubmit">
     <DataAnnotationsValidator />
@@ -96,7 +97,7 @@
         Price = Variant.Price.GetValueOrDefault();
 
         var options = await ProductsClient.GetProductOptionsAsync(ProductId);
-        foreach(var option in options)
+        foreach (var option in options)
         {
             var vm = new OptionVM()
             {
@@ -113,7 +114,7 @@
 
             vm.SelectedValue = vm.Values.FirstOrDefault(x => x.Name == o?.Value);
 
-            if(vm.SelectedValue is null)
+            if (vm.SelectedValue is null)
             {
                 vm.SelectedValue = vm.Values.FirstOrDefault();
             }
@@ -143,8 +144,15 @@
             data.Options.Add(optionData);
         }
 
-        var result = await ProductsClient.UpdateVariantAsync(ProductId, Variant.Id, data);
-        await Modal.CloseAsync(ModalResult.Ok(result));
+        try
+        {
+            var result = await ProductsClient.UpdateVariantAsync(ProductId, Variant.Id, data);
+            await Modal.CloseAsync(ModalResult.Ok(result));
+        }
+        catch (ApiException<ProblemDetails> exc)
+        {
+            ToastService.ShowError(exc.Result.Detail);
+        }
     }
 
     public class OptionVM

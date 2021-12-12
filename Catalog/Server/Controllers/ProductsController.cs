@@ -108,7 +108,7 @@ namespace Catalog.Server.Controllers
         [HttpPost("{productId}/Options/{optionId}/Values")]
         public async Task<ActionResult<ApiOptionValue>> CreateProductOptionValue(string productId, string optionId, ApiCreateProductOptionValue data)
         {
-            
+
             return Ok(await api.CreateProductOptionValue(productId, optionId, data));
         }
 
@@ -163,15 +163,41 @@ namespace Catalog.Server.Controllers
         }
 
         [HttpPost("{productId}/Variants")]
+        [ProducesResponseType(typeof(ApiProductVariant), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiProductVariant>> CreateVariant(string productId, ApiCreateProductVariant variant)
         {
-            return Ok(await api.CreateVariant(productId, variant));
+            try
+            {
+                return Ok(await api.CreateVariant(productId, variant));
+            }
+            catch (VariantAlreadyExistsException e)
+            {
+                return Problem(
+                    title: "Variant already exists.",
+                    detail: "There is already a variant with the chosen options.",
+                    instance: Request.Path,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
         }
 
         [HttpPut("{productId}/Variants/{variantId}")]
+        [ProducesResponseType(typeof(ApiProductVariant), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiProductVariant>> UpdateVariant(string productId, string variantId, ApiUpdateProductVariant data)
         {
-            return Ok(await api.UpdateVariant(productId, variantId, data));
+            try
+            {
+                return Ok(await api.UpdateVariant(productId, variantId, data));
+            }
+            catch (VariantAlreadyExistsException e)
+            {
+                return Problem(
+                    title: "Variant already exists.",
+                    detail: "There is already a variant with the chosen options.",
+                    instance: Request.Path,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
         }
     }
 }
