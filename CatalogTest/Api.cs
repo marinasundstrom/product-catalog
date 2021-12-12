@@ -380,10 +380,13 @@ public class Api
     {
         var product = await context.Products
             .Include(x => x.OptionGroups)
+            .ThenInclude(x => x.Options)
             .FirstAsync(x => x.Id == productId);
 
         var optionGroup = product.OptionGroups
             .First(x => x.Id == optionGroupId);
+
+        optionGroup.Options.Clear();
 
         product.OptionGroups.Remove(optionGroup);
         context.OptionGroups.Remove(optionGroup);

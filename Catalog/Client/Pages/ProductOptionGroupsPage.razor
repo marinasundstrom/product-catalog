@@ -90,7 +90,7 @@ else
 
     async Task DeleteGroup(ApiOptionGroup optionGroup)
     {
-        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the group?", yesText: "Yes", noText: "No");
+        var modalRef = ModalService.ShowMessageBox("The group will be deleted, but the options will remain.\nThis cannot be undone.", "Delete the group?", yesText: "Yes", noText: "No");
         var modalResult = await modalRef.Result;
         if (modalResult.Cancelled || !(bool)modalResult.Data)
         {
