@@ -16,17 +16,20 @@
         <ValidationMessage For="() => Description" />
     </div>
 
-    <div class="form-group">
-        <label>SKU</label>
-        <InputText class="form-control" @bind-Value="SKU" />
-        <ValidationMessage For="() => SKU" />
-    </div>
+    @if (!Product.HasVariants)
+    {
+        <div class="form-group">
+            <label>SKU</label>
+            <InputText class="form-control" @bind-Value="SKU" />
+            <ValidationMessage For="() => SKU" />
+        </div>
 
-    <div class="form-group">
-        <label>Price</label>
-        <InputNumber type="currency" class="form-control" @bind-Value="Price" />
-        <ValidationMessage For="() => Price" />
-    </div>
+        <div class="form-group">
+            <label>Price</label>
+            <InputNumber type="currency" class="form-control" @bind-Value="Price" />
+            <ValidationMessage For="() => Price" />
+        </div>
+    }
 
     <div class="mt-4">
         <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
@@ -62,7 +65,8 @@
 
     async Task OnSubmit()
     {
-        ApiUpdateProductDetails data = new () {
+        ApiUpdateProductDetails data = new()
+        {
             Name = Name,
             Description = Description,
             Sku = SKU,

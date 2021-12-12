@@ -61,14 +61,14 @@ else
         if (options is not null)
         {
             @foreach (var group in options
-           .ToList()
-           .GroupBy(x => x.Group?.Name))
+          .ToList()
+          .GroupBy(x => x.Group?.Name))
             {
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>@(group.Key ?? "Option")</th>
-                            <th>Is selectable</th>
+                            <th>Multiple values</th>
                             <th>Values</th>
                             <th>Default value</th>
                             <th></th>
@@ -79,7 +79,7 @@ else
                         {
                             <tr>
                                 <td>@option.Name</td>
-                                <td>@(!option.HasValues)</td>
+                                <td>@(option.OptionType == OptionType.Multiple)</td>
                                 <td>@string.Join(", ", option.Values.Select(x => x.Name))</td>
                                 <td>@option.DefaultValue?.Name</td>
                                 <td>
@@ -97,57 +97,64 @@ else
     @if (product.HasVariants)
     {
 
-        <h4>Variants</h4>
+        <h4 class="mt-4">Variants</h4>
 
-        <button class="btn btn-secondary" @onclick="CreateVariant"><i class="oi oi-plus" /> Create variant</button>
-
-        @if (variants is not null)
+        @if (!options.Any())
         {
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>SKU</th>
-                        <th>Price</th>
+            <span>Add options before creating variants</span>
+        }
+        else
+        {
+            <button class="btn btn-secondary" @onclick="CreateVariant"><i class="oi oi-plus" /> Create variant</button>
 
-                        @if (variants is not null && variants.Any())
-                        {
-                            @foreach (var option in variants.First().Options)
+            @if (variants is not null)
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>SKU</th>
+                            <th>Price</th>
+
+                            @if (variants is not null && variants.Any())
                             {
-                                <th>@option.Name</th>
+                                @foreach (var option in variants.First().Options)
+                                {
+                                    <th>@option.Name</th>
+                                }
+                            }
+
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (variants is not null)
+                        {
+                            @foreach (var variant in variants)
+                            {
+                                <tr>
+                                    <td>@variant.Name</td>
+                                    <td>@variant.Sku</td>
+                                    <td>@variant.Price?.ToString("c")</td>
+
+                                    @if (variant.Options is not null)
+                                    {
+                                        foreach (var option in variant.Options)
+                                        {
+                                            <td>@option.Value</td>
+                                        }
+                                    }
+
+                                    <td>
+                                        <a href="#" @onclick:preventDefault @onclick="async () => await UpdateVariant(variant)"><i class="oi oi-pencil"></i></a>
+                                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteVariant(variant)"><i class="oi oi-trash"></i></a>
+                                    </td>
+                                </tr>
                             }
                         }
-
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (variants is not null)
-                    {
-                        @foreach (var variant in variants)
-                        {
-                            <tr>
-                                <td>@variant.Name</td>
-                                <td>@variant.Sku</td>
-                                <td>@variant.Price?.ToString("c")</td>
-
-                                @if (variant.Options is not null)
-                                {
-                                    foreach (var option in variant.Options)
-                                    {
-                                        <td>@option.Value</td>
-                                    }
-                                }
-
-                                <td>
-                                    <a href="#" @onclick:preventDefault @onclick="async () => await UpdateVariant(variant)"><i class="oi oi-pencil"></i></a>
-                                    <a href="#" @onclick:preventDefault @onclick="async () => await DeleteVariant(variant)"><i class="oi oi-trash"></i></a>
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            }
         }
     }
 }
@@ -181,7 +188,8 @@ else
     async Task CreateOption()
     {
         ModalParameters parameters = new();
-        parameters.Add(nameof(CreateVariantModal.ProductId), ProductId);
+        parameters.Add(nameof(CreateProductOptionModal.ProductId), ProductId);
+        parameters.Add(nameof(CreateProductOptionModal.Product), product);
 
         var modalRef = ModalService.Show<CreateProductOptionModal>("New Option", parameters);
 
@@ -197,6 +205,7 @@ else
         ModalParameters parameters = new();
         parameters.Add(nameof(UpdateProductOptionModal.ProductId), ProductId);
         parameters.Add(nameof(UpdateProductOptionModal.Option), option);
+        parameters.Add(nameof(UpdateProductOptionModal.Product), product);
 
         var modalRef = ModalService.Show<UpdateProductOptionModal>("Update Option", parameters);
 

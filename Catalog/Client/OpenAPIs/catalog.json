@@ -117,7 +117,8 @@
             "name": "includeUnlisted",
             "in": "query",
             "schema": {
-              "type": "boolean"
+              "type": "boolean",
+              "default": false
             },
             "x-position": 1
           }
@@ -1083,6 +1084,13 @@
           "name": {
             "type": "string"
           },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "optionType": {
+            "$ref": "#/components/schemas/OptionType"
+          },
           "group": {
             "nullable": true,
             "oneOf": [
@@ -1090,9 +1098,6 @@
                 "$ref": "#/components/schemas/ApiOptionGroup"
               }
             ]
-          },
-          "hasValues": {
-            "type": "boolean"
           },
           "sku": {
             "type": "string",
@@ -1121,6 +1126,18 @@
             ]
           }
         }
+      },
+      "OptionType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Single",
+          "Multiple"
+        ],
+        "enum": [
+          0,
+          1
+        ]
       },
       "ApiOptionGroup": {
         "type": "object",
@@ -1331,6 +1348,14 @@
           "optionType": {
             "$ref": "#/components/schemas/OptionType"
           },
+          "group": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ApiOptionGroup"
+              }
+            ]
+          },
           "sku": {
             "type": "string",
             "nullable": true
@@ -1351,18 +1376,6 @@
             }
           }
         }
-      },
-      "OptionType": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Single",
-          "Multiple"
-        ],
-        "enum": [
-          0,
-          1
-        ]
       },
       "ApiCreateProductOptionValue": {
         "type": "object",

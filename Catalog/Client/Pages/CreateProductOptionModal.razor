@@ -11,10 +11,13 @@
         <ValidationMessage For="() => Name" />
     </div>
 
-    <div class="form-check my-2">
-        <InputCheckbox class="form-check-input" @bind-Value="HasMultipleChoices" />
-        <label class="form-check-label">Has multiple choices</label>
-    </div>
+    @if (!Product.HasVariants)
+    {
+        <div class="form-check my-2">
+            <InputCheckbox class="form-check-input" @bind-Value="HasMultipleChoices" />
+            <label class="form-check-label">Has multiple choices</label>
+        </div>
+    }
 
     <div class="form-group">
         <label>Description</label>
@@ -22,17 +25,20 @@
         <ValidationMessage For="() => Description" />
     </div>
 
-    <div class="form-group">
-        <label>SKU</label>
-        <InputText class="form-control" @bind-Value="SKU" />
-        <ValidationMessage For="() => SKU" />
-    </div>
+    @if (!Product.HasVariants)
+    {
+        <div class="form-group">
+            <label>SKU</label>
+            <InputText class="form-control" @bind-Value="SKU" />
+            <ValidationMessage For="() => SKU" />
+        </div>
 
-    <div class="form-group">
-        <label>Price</label>
-        <InputNumber type="currency" class="form-control" @bind-Value="Price" />
-        <ValidationMessage For="() => Price" />
-    </div>
+        <div class="form-group">
+            <label>Price</label>
+            <InputNumber type="currency" class="form-control" @bind-Value="Price" />
+            <ValidationMessage For="() => Price" />
+        </div>
+    }
 
     @if (HasMultipleChoices)
     {
@@ -94,6 +100,8 @@
 
     [Parameter] public string ProductId { get; set; }
 
+    [Parameter] public ApiProduct Product { get; set; }
+
     [Required]
     public string Name { get; set; }
 
@@ -108,9 +116,9 @@
     [ValidateComplexType]
     public List<OptionValueVM> Values { get; set; } = new List<OptionValueVM>();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-
+        HasMultipleChoices = Product.HasVariants;
     }
 
     void AddValue()

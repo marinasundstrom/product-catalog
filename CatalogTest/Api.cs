@@ -164,7 +164,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOption(option.Id, option.Name, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Seq, option.Group.Min, option.Group.Max), option.Values.Any(), option.SKU, option.Price, option.IsSelected,
+        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
             option.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             option.DefaultValue == null ? null : new ApiOptionValue(option.DefaultValue.Id, option.DefaultValue.Name, option.DefaultValue.SKU, option.DefaultValue.Price, option.DefaultValue.Seq));
     }
@@ -192,6 +192,7 @@ public class Api
 
         var option = await context.Options
             .Include(x => x.Values)
+            .Include(x => x.Group)
             .FirstAsync(x => x.Id == optionId);
 
         var group = await context.OptionGroups
@@ -216,6 +217,7 @@ public class Api
                 };
 
                 option.Values.Add(value);
+                context.OptionValues.Add(value);
             }
             else
             {
@@ -242,7 +244,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOption(option.Id, option.Name, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Seq, option.Group.Min, option.Group.Max), option.Values.Any(), option.SKU, option.Price, option.IsSelected,
+        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
             option.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             option.DefaultValue == null ? null : new ApiOptionValue(option.DefaultValue.Id, option.DefaultValue.Name, option.DefaultValue.SKU, option.DefaultValue.Price, option.DefaultValue.Seq));
     }
@@ -258,7 +260,7 @@ public class Api
             .Where(p => p.Products.Any(x => x.Id == productId))
             .ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.Values.Any(), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -300,7 +302,7 @@ public class Api
 
         var options = await query.ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.Values.Any(), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -315,7 +317,7 @@ public class Api
             .Where(o => o.Id == optionId)
             .ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.Values.Any(), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -611,11 +613,11 @@ public record class ApiCreateProduct(string Name, bool HasVariants, string? Desc
 public record class ApiUpdateProductDetails(string Name, string? Description, string? SKU, string? Image, decimal? Price, string? GroupId);
 
 
-public record class ApiOption(string Id, string Name, ApiOptionGroup? Group, bool HasValues, string? SKU, decimal? Price, bool IsSelected, IEnumerable<ApiOptionValue> Values, ApiOptionValue? DefaultValue);
+public record class ApiOption(string Id, string Name, string? Description, OptionType OptionType, ApiOptionGroup? Group, string? SKU, decimal? Price, bool IsSelected, IEnumerable<ApiOptionValue> Values, ApiOptionValue? DefaultValue);
 
 public record class ApiOptionValue(string Id, string Name, string? SKU, decimal? Price, int? Seq);
 
-public record class ApiCreateProductOption(string Name, string? Description, OptionType OptionType, string? SKU, decimal? Price, string? GroupId, IEnumerable<ApiCreateProductOptionValue> Values);
+public record class ApiCreateProductOption(string Name, string? Description, OptionType OptionType, ApiOptionGroup? Group, string? SKU, decimal? Price, string? GroupId, IEnumerable<ApiCreateProductOptionValue> Values);
 
 public record class ApiCreateProductOptionValue(string Name, string? SKU, decimal? Price);
 

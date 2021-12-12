@@ -11,10 +11,13 @@
         <ValidationMessage For="() => Name" />
     </div>
 
-    <div class="form-check my-2">
-        <InputCheckbox class="form-check-input" @bind-Value="IsSelectable" />
-        <label class="form-check-label">Is selectable</label>
-    </div>
+    @if (!Product.HasVariants)
+    {
+        <div class="form-check my-2">
+            <InputCheckbox class="form-check-input" @bind-Value="HasMultipleChoices" />
+            <label class="form-check-label">Has multiple choices</label>
+        </div>
+    }
 
     <div class="form-group">
         <label>Description</label>
@@ -22,19 +25,22 @@
         <ValidationMessage For="() => Description" />
     </div>
 
-    <div class="form-group">
-        <label>SKU</label>
-        <InputText class="form-control" @bind-Value="SKU" />
-        <ValidationMessage For="() => SKU" />
-    </div>
+    @if (!Product.HasVariants)
+    {
+        <div class="form-group">
+            <label>SKU</label>
+            <InputText class="form-control" @bind-Value="SKU" />
+            <ValidationMessage For="() => SKU" />
+        </div>
 
-    <div class="form-group">
-        <label>Price</label>
-        <InputNumber type="currency" class="form-control" @bind-Value="Price" />
-        <ValidationMessage For="() => Price" />
-    </div>
+        <div class="form-group">
+            <label>Price</label>
+            <InputNumber type="currency" class="form-control" @bind-Value="Price" />
+            <ValidationMessage For="() => Price" />
+        </div>
+    }
 
-    @if (IsSelectable)
+    @if (HasMultipleChoices)
     {
         <h4 class="mt-4">Values</h4>
 
@@ -100,10 +106,12 @@
 
     [Parameter] public ApiOption Option { get; set; }
 
+    [Parameter] public ApiProduct Product { get; set; }
+
     [Required]
     public string Name { get; set; }
 
-    public bool IsSelectable { get; set; }
+    public bool HasMultipleChoices { get; set; }
 
     public string Description { get; set; }
 
@@ -122,7 +130,7 @@
         //Description = Option.Description;
         Price = Option.Price;
         SKU = Option.Sku;
-        IsSelectable = Option.HasValues;
+        HasMultipleChoices = Option.OptionType == OptionType.Multiple;
 
         foreach (var value in Option.Values)
         {
@@ -164,7 +172,7 @@
         var data = new ApiUpdateProductOption
         {
             Name = Name,
-            OptionType = IsSelectable ? OptionType.Multiple : OptionType.Single,
+            OptionType = HasMultipleChoices ? OptionType.Multiple : OptionType.Single,
             Description = Description,
             Sku = SKU,
             Price = Price,
