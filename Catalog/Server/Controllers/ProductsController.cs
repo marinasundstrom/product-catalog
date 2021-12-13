@@ -23,9 +23,9 @@ namespace Catalog.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ApiProduct>>> GetProducts(bool includeUnlisted = false)
+        public async Task<ActionResult<IEnumerable<ApiProduct>>> GetProducts(bool includeUnlisted = false, string? groupId = null /*, bool includeNestedGroups = false */)
         {
-            return Ok(await api.GetProducts(includeUnlisted));
+            return Ok(await api.GetProducts(includeUnlisted, groupId));
         }
 
         [HttpGet("{productId}")]
@@ -55,9 +55,9 @@ namespace Catalog.Server.Controllers
         }
 
         [HttpGet("Groups")]
-        public async Task<ActionResult<IEnumerable<ApiProductGroup>>> GetProductGroups()
+        public async Task<ActionResult<IEnumerable<ApiProductGroup>>> GetProductGroups(bool includeWithUnlistedProducts = false)
         {
-            return Ok(await api.GetProductGroups());
+            return Ok(await api.GetProductGroups(includeWithUnlistedProducts));
         }
 
         [HttpPost("Groups")]

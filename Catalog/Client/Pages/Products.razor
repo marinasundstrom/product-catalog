@@ -30,6 +30,22 @@
 <div class="album py-5 bg-light">
     <div class="container">
 
+        <div class="mb-4">
+            @if (productGroups is not null)
+            {
+                <a href="#" @onclick="async () => await SetGroup(null!)">
+                    <span class="badge rounded-pill bg-primary me-2">All</span>
+                </a>
+
+                foreach (var pg in productGroups)
+                {
+                    <a href="#" @onclick="async () => await SetGroup(pg.Id)">
+                        <span class="badge rounded-pill bg-secondary me-2">@pg.Name</span>
+                    </a>
+                }
+            }
+        </div>
+
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
             @if (products == null)
             {
@@ -77,11 +93,17 @@
 
 @code
 {
+    IEnumerable<ApiProductGroup>? productGroups = null;
     IEnumerable<ApiProduct>? products = null;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? GroupId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        products = await ProductsClient.GetProductsAsync(false);
+        productGroups = await ProductsClient.GetProductGroupsAsync(false);
+        products = await ProductsClient.GetProductsAsync(false, GroupId);
     }
 
     async Task CreateProduct()
@@ -95,6 +117,12 @@
         var product = (ApiProduct)result.Data;
 
         NavigationManager.NavigateTo($"/products/{product.Id}/edit");
+    }
+
+    async Task SetGroup(string groupId)
+    {
+        products = await ProductsClient.GetProductsAsync(false, groupId);
+        NavigationManager.NavigateTo($"/products?groupId={groupId}", replace: true);
     }
 }
 

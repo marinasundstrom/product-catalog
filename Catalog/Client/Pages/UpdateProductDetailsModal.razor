@@ -70,7 +70,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var groups = await ProductsClient.GetProductGroupsAsync();
+        var groups = await ProductsClient.GetProductGroupsAsync(true);
         Groups = groups.ToList();
 
         Name = Product.Name;

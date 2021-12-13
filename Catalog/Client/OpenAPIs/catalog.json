@@ -121,6 +121,15 @@
               "default": false
             },
             "x-position": 1
+          },
+          {
+            "name": "groupId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 2
           }
         ],
         "responses": {
@@ -292,6 +301,17 @@
           "Products"
         ],
         "operationId": "Products_GetProductGroups",
+        "parameters": [
+          {
+            "name": "includeWithUnlistedProducts",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "x-position": 1
+          }
+        ],
         "responses": {
           "200": {
             "description": "",

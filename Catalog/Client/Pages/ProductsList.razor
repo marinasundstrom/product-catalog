@@ -72,9 +72,13 @@ else
 {
     IEnumerable<ApiProduct>? products = null;
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? GroupId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        products = await ProductsClient.GetProductsAsync(true);
+        products = await ProductsClient.GetProductsAsync(true, GroupId);
     }
 
     void ShowProduct(ApiProduct product)

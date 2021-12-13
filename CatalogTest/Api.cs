@@ -15,7 +15,7 @@ public class Api
         this.context = context;
     }
 
-    public async Task<IEnumerable<ApiProduct>> GetProducts(bool includeUnlisted = false)
+    public async Task<IEnumerable<ApiProduct>> GetProducts(bool includeUnlisted = false, string? groupId = null)
     {
         var query = context.Products
             .AsSplitQuery()
@@ -26,6 +26,11 @@ public class Api
         if (!includeUnlisted)
         {
             query = query.Where(x => x.Visibility == Data.ProductVisibility.Listed);
+        }
+
+        if (groupId is not null)
+        {
+            query = query.Where(x => x.Group.Id == groupId);
         }
 
         var products = await query.ToArrayAsync();
@@ -326,9 +331,18 @@ public class Api
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
 
-    public async Task<IEnumerable<ApiProductGroup>> GetProductGroups()
+    public async Task<IEnumerable<ApiProductGroup>> GetProductGroups(bool includeWithUnlistedProducts = false)
     {
-        var productGroups = await context.ProductGroups.ToListAsync();
+        var query = context.ProductGroups
+                .Include(x => x.Products)
+                .AsQueryable();
+
+        if (!includeWithUnlistedProducts)
+        {
+            query = query.Where(x => x.Products.Any(z => z.Visibility == Data.ProductVisibility.Listed));
+        }
+
+        var productGroups = await query.ToListAsync();
 
         return productGroups.Select(group => new ApiProductGroup(group.Id, group.Name, group.Description, group?.Parent?.Id));
     }
