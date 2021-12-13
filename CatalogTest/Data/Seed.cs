@@ -157,7 +157,8 @@ public class Seed
             Name = "T-shirt",
             Description = "T-shirt i olika färger",
             HasVariants = true,
-            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Clothes")
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Clothes"),
+            Visibility = ProductVisibility.Listed
         };
 
         context.Products.Add(product);
@@ -633,7 +634,8 @@ public class Seed
             Name = "Sallad",
             Description = "Din egna sallad",
             Price = 52,
-            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Food")
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Food"),
+            Visibility = ProductVisibility.Listed
         };
 
         context.Products.Add(product);
