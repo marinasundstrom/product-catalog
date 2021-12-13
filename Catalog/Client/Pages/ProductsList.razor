@@ -14,12 +14,16 @@
 }
 else
 {
-    <button @onclick="CreateProduct" class="btn btn-secondary mb-2">Create product</button>
+    <button @onclick="CreateProduct" class="btn btn-secondary mb-2 me-2">Create product</button>
+
+    <a class="btn btn-secondary mb-2" href="/products/groups">Product groups</a>
 
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Description</th>
+                <th>Group</th>
                 <th>SKU</th>
                 <th>Price</th>
                 <th>Visibility</th>
@@ -29,28 +33,36 @@ else
         <tbody>
             @foreach (var product in products)
             {
-                <tr style="cursor: pointer" @onclick="() => ShowProduct(product)">
+            <tr style="cursor: pointer" @onclick="() => ShowProduct(product)">
 
-                    <td>
-                        @product.Name
-                    </td>
+                <td>
+                    @product.Name
+                </td>
 
-                    <td>
-                        @product.Sku
-                    </td>
+                <td>
+                    @product.Description
+                </td>
 
-                    <td>
-                        @product.Price?.ToString("c")
-                    </td>
+                <td>
+                    @product?.Group?.Name
+                </td>
 
-                    <td>
-                        @product.Visibility
-                    </td>
+                <td>
+                    @product.Sku
+                </td>
 
-                    <td>
-                        <a href="/products/@product.Id/edit" @onclick:stopPropagation><i class="oi oi-pencil"></i></a>
-                    </td>
-                </tr>
+                <td>
+                    @product.Price?.ToString("c")
+                </td>
+
+                <td>
+                    @product.Visibility
+                </td>
+
+                <td>
+                    <a href="/products/@product.Id/edit" @onclick:stopPropagation><i class="oi oi-pencil"></i></a>
+                </td>
+            </tr>
             }
         </tbody>
     </table>

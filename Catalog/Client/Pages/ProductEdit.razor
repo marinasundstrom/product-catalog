@@ -1,5 +1,6 @@
 ﻿@page "/products/{productId}/edit"
 @layout PageLayout
+@inject NavigationManager NavigationManager
 @inject IProductsClient ProductsClient
 @inject IModalService ModalService
 @inject IToastService ToastService
@@ -27,6 +28,12 @@ else
                 {
                     <dt>Description</dt>
                     <dd>@product.Description</dd>
+                }
+
+                @if (product.Group is not null)
+                {
+                    <dt>Group</dt>
+                    <dd>@product.Group.Name</dd>
                 }
 
                 @if (!string.IsNullOrEmpty(product.Sku))
@@ -298,12 +305,17 @@ else
 
         if (result.Cancelled) return;
 
-        var data = (ApiUpdateProductDetails)result.Data;
+        product = await ProductsClient.GetProductAsync(ProductId);
 
+        /*
         product.Name = data.Name;
         product.Description = data.Description;
         product.Sku = data.Sku;
         product.Price = data.Price;
+        product.Group = data.GroupId;
+        */
+
+        //NavigationManager.NavigateTo($"/products/{product.Id}/edit", true);
     }
 
     class ProductVariantVm

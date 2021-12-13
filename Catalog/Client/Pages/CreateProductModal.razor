@@ -16,6 +16,15 @@
         <ValidationMessage For="() => Description" />
     </div>
 
+    @if (Group is not null)
+    {
+        <div class="form-group">
+            <label>Group</label>
+            <MySelect Items="Groups" ShowDefaultOption="true" @bind-Value="Group" Selector="(x) => x?.Name" />
+            <ValidationMessage For="() => Group" />
+        </div>
+    }
+
     <div class="form-check my-2">
         <InputCheckbox class="form-check-input" @bind-Value="HasVariants" />
         <label class="form-check-label">Has variants</label>
@@ -45,6 +54,8 @@
 </EditForm>
 
 @code {
+    public IList<ApiProductGroup> Groups { get; set; }
+
     [CascadingParameter] BlazoredModalInstance Modal { get; set; }
 
     [Required]
@@ -54,9 +65,18 @@
 
     public string? Description { get; set; }
 
+    public ApiProductGroup Group { get; set; }
+
     public string? SKU { get; set; }
 
     public decimal? Price { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var groups = await ProductsClient.GetProductGroupsAsync();
+        Groups = groups.ToList();
+        Group = groups.First();
+    }
 
     async Task OnSubmit()
     {

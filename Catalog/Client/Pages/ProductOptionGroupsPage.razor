@@ -24,19 +24,21 @@ else
             <thead>
                 <tr>
                     <th>Name</th>
+                    <td>Description</td>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var group in optionGroups)
                 {
-                    <tr>
-                        <td>@group.Name</td>
-                        <td>
-                            <a href="#" @onclick:preventDefault @onclick="async () => await UpdateGroup(group)"><i class="oi oi-pencil"></i></a>
-                            <a href="#" @onclick:preventDefault @onclick="async () => await DeleteGroup(group)"><i class="oi oi-trash"></i></a>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>@group.Name</td>
+                    <td>@group.Description</td>
+                    <td>
+                        <a href="#" @onclick:preventDefault @onclick="async () => await UpdateGroup(group)"><i class="oi oi-pencil"></i></a>
+                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteGroup(group)"><i class="oi oi-trash"></i></a>
+                    </td>
+                </tr>
                 }
             </tbody>
         </table>

@@ -1,0 +1,94 @@
+﻿@page "/products/groups"
+@layout PageLayout
+@inject IProductsClient ProductsClient
+@inject IModalService ModalService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Product Groups</PageTitle>
+
+<h1>Product Groups</h1>
+
+<button class="btn btn-secondary my-2" @onclick="CreateGroup"><i class="oi oi-plus" /> Create group</button>
+
+@if (productGroups is not null)
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var group in productGroups)
+            {
+                <tr>
+                    <td>@group.Name</td>
+                    <td>@group.Description</td>
+                    <td>
+                        <a href="#" @onclick:preventDefault @onclick="async () => await UpdateGroup(group)"><i class="oi oi-pencil"></i></a>
+                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteGroup(group)"><i class="oi oi-trash"></i></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code
+{
+    List<ApiProductGroup>? productGroups;
+
+    [Parameter]
+    public string? ProductId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        productGroups = (await ProductsClient.GetProductGroupsAsync()).ToList();
+    }
+
+    async Task CreateGroup()
+    {
+        ModalParameters parameters = new();
+
+        var modalRef = ModalService.Show<CreateProductGroupModal>("Create Group", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        productGroups.Add((ApiProductGroup)result.Data);
+    }
+
+    async Task UpdateGroup(ApiProductGroup productGroup)
+    {
+        ModalParameters parameters = new();
+        parameters.Add(nameof(UpdateProductGroupModal.ProductGroup), productGroup);
+
+        var modalRef = ModalService.Show<UpdateProductGroupModal>("Update Group", parameters);
+
+        var result = await modalRef.Result;
+
+        if (result.Cancelled) return;
+
+        var index = productGroups!.IndexOf(productGroup);
+
+        productGroups[index] = (ApiProductGroup)result.Data;
+    }
+
+    async Task DeleteGroup(ApiProductGroup productGroup)
+    {
+        var modalRef = ModalService.ShowMessageBox("The group will be deleted, but the options will remain.\nThis cannot be undone.", "Delete the group?", yesText: "Yes", noText: "No");
+        var modalResult = await modalRef.Result;
+        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        {
+            return;
+        }
+
+        await ProductsClient.DeleteProductGroupAsync(productGroup.Id);
+
+        productGroups.Remove(productGroup);
+    }
+}
+

@@ -30,7 +30,8 @@ public class Api
 
         var products = await query.ToArrayAsync();
 
-        return products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted));
+        return products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.Group == null ? null : new ApiProductGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group?.Parent?.Id),
+            x.SKU, x.Image, x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted));
     }
 
     public async Task<ApiProduct?> GetProduct(string productId)
@@ -43,7 +44,8 @@ public class Api
 
         if (product == null) return null;
 
-        return new ApiProduct(product.Id, product.Name, product.Description, product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
+        return new ApiProduct(product.Id, product.Name, product.Description, product.Group == null ? null : new ApiProductGroup(product.Group.Id, product.Group.Name, product.Group.Description, product.Group?.Parent?.Id),
+            product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
     }
 
     public async Task<ApiProduct?> CreateProduct(ApiCreateProduct data)
@@ -76,7 +78,8 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiProduct(product.Id, product.Name, product.Description, product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
+        return new ApiProduct(product.Id, product.Name, product.Description, product.Group == null ? null : new ApiProductGroup(product.Group.Id, product.Group.Name, product.Group.Description, product.Group?.Parent?.Id),
+            product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
     }
 
     public async Task UpdateProductDetails(string productId, ApiUpdateProductDetails data)
@@ -85,7 +88,6 @@ public class Api
             .FirstAsync(x => x.Id == productId);
 
         var group = await context.ProductGroups
-            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == data.GroupId);
 
         product.Name = data.Name;
@@ -165,7 +167,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
+        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Description, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
             option.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             option.DefaultValue == null ? null : new ApiOptionValue(option.DefaultValue.Id, option.DefaultValue.Name, option.DefaultValue.SKU, option.DefaultValue.Price, option.DefaultValue.Seq));
     }
@@ -246,7 +248,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
+        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Description, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
             option.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             option.DefaultValue == null ? null : new ApiOptionValue(option.DefaultValue.Id, option.DefaultValue.Name, option.DefaultValue.SKU, option.DefaultValue.Price, option.DefaultValue.Seq));
     }
@@ -262,7 +264,7 @@ public class Api
             .Where(p => p.Products.Any(x => x.Id == productId))
             .ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -304,7 +306,7 @@ public class Api
 
         var options = await query.ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -319,9 +321,67 @@ public class Api
             .Where(o => o.Id == optionId)
             .ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
+    }
+
+    public async Task<IEnumerable<ApiProductGroup>> GetProductGroups()
+    {
+        var productGroups = await context.ProductGroups.ToListAsync();
+
+        return productGroups.Select(group => new ApiProductGroup(group.Id, group.Name, group.Description, group?.Parent?.Id));
+    }
+
+
+    public async Task<ApiProductGroup?> CreateProductGroup(ApiCreateProductGroup data)
+    {
+        var parentGroup = await context.ProductGroups
+            .FirstOrDefaultAsync(x => x.Id == data.ParentGroupId);
+
+        var productGroup = new ProductGroup()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = data.Name,
+            Description = data.Description,
+            Parent = parentGroup
+        };
+
+        context.ProductGroups.Add(productGroup);
+
+        await context.SaveChangesAsync();
+
+        return new ApiProductGroup(productGroup.Id, productGroup.Name, productGroup.Description, productGroup?.Parent?.Id);
+    }
+
+    public async Task<ApiProductGroup?> UpdateProductGroup(string productGroupId, ApiUpdateProductGroup data)
+    {
+        var productGroup = await context.ProductGroups
+                    .FirstAsync(x => x.Id == productGroupId);
+
+        var parentGroup = await context.ProductGroups
+            .FirstOrDefaultAsync(x => x.Id == data.ParentGroupId);
+
+        productGroup.Name = data.Name;
+        productGroup.Description = data.Description;
+        productGroup.Parent = parentGroup;
+
+        await context.SaveChangesAsync();
+
+        return new ApiProductGroup(productGroup.Id, productGroup.Name, productGroup.Description, productGroup?.Parent?.Id);
+    }
+
+    public async Task DeleteProductGroup(string productGroupId)
+    {
+        var productGroup = await context.ProductGroups
+            .Include(x => x.Products)
+            .FirstAsync(x => x.Id == productGroupId);
+
+        productGroup.Products.Clear();
+
+        context.ProductGroups.Remove(productGroup);
+
+        await context.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<ApiOptionGroup>> GetOptionGroups(string productId)
@@ -332,7 +392,7 @@ public class Api
             .Where(x => x.Product!.Id == productId)
             .ToListAsync();
 
-        return groups.Select(group => new ApiOptionGroup(group.Id, group.Name, group.Seq, group.Min, group.Max));
+        return groups.Select(group => new ApiOptionGroup(group.Id, group.Name, group.Description, group.Seq, group.Min, group.Max));
     }
 
 
@@ -354,7 +414,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOptionGroup(group.Id, group.Name, group.Seq, group.Min, group.Max);
+        return new ApiOptionGroup(group.Id, group.Name, group.Description, group.Seq, group.Min, group.Max);
     }
 
     public async Task<ApiOptionGroup?> UpdateOptionGroup(string productId, string optionGroupId, ApiUpdateProductOptionGroup data)
@@ -373,7 +433,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOptionGroup(optionGroup.Id, optionGroup.Name, optionGroup.Seq, optionGroup.Min, optionGroup.Max);
+        return new ApiOptionGroup(optionGroup.Id, optionGroup.Name, optionGroup.Description, optionGroup.Seq, optionGroup.Min, optionGroup.Max);
     }
 
     public async Task DeleteOptionGroup(string productId, string optionGroupId)
@@ -694,12 +754,18 @@ public class Api
     }
 }
 
-public record class ApiProduct(string Id, string Name, string? Description, string? SKU, string? Image, decimal? Price, bool HasVariants, ProductVisibility? Visibility);
+public record class ApiProduct(string Id, string Name, string? Description, ApiProductGroup? Group, string? SKU, string? Image, decimal? Price, bool HasVariants, ProductVisibility? Visibility);
 
 public record class ApiCreateProduct(string Name, bool HasVariants, string? Description, string? GroupId, string? SKU, decimal? Price, ProductVisibility? Visibility);
 
-
 public record class ApiUpdateProductDetails(string Name, string? Description, string? SKU, string? Image, decimal? Price, string? GroupId);
+
+
+public record class ApiProductGroup(string Id, string Name, string? Description, string? ParentGroupId);
+
+public record class ApiCreateProductGroup(string Name, string? Description, string? ParentGroupId);
+
+public record class ApiUpdateProductGroup(string Name, string? Description, string? ParentGroupId);
 
 
 public record class ApiOption(string Id, string Name, string? Description, OptionType OptionType, ApiOptionGroup? Group, string? SKU, decimal? Price, bool IsSelected, IEnumerable<ApiOptionValue> Values, ApiOptionValue? DefaultValue);
@@ -715,7 +781,7 @@ public record class ApiUpdateProductOption(string Name, string? Description, Opt
 public record class ApiUpdateProductOptionValue(string? Id, string Name, string? SKU, decimal? Price);
 
 
-public record class ApiOptionGroup(string Id, string Name, int? Seq, int? Min, int? Max);
+public record class ApiOptionGroup(string Id, string Name, string? Description, int? Seq, int? Min, int? Max);
 
 public record class ApiCreateProductOptionGroup(string Name, string? Description, int? Min, int? Max);
 

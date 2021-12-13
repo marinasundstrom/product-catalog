@@ -2,6 +2,7 @@
 
 using CatalogTest.Data;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CatalogTest.Data;
@@ -16,7 +17,30 @@ public class Seed
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
 
-        CreateShirt2(context);
+        context.ProductGroups.Add(new ProductGroup()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Products",
+            Description = null
+        });
+
+        context.ProductGroups.Add(new ProductGroup()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Clothes",
+            Description = null
+        });
+
+        context.ProductGroups.Add(new ProductGroup()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Food",
+            Description = null
+        });
+
+        await context.SaveChangesAsync();
+
+        await CreateShirt2(context);
 
         await CreateKebabPlate(context);
 
@@ -29,14 +53,15 @@ public class Seed
         await context.SaveChangesAsync();
     }
 
-    public static void CreateShirt(CatalogContext context)
+    public static async Task CreateShirt(CatalogContext context)
     {
         var product = new Product()
         {
             Id = Guid.NewGuid().ToString(),
             Name = "Randing t-shirt",
             Description = "Stilren t-shirt med randigt mönster",
-            HasVariants = true
+            HasVariants = true,
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Clothes")
         };
 
         context.Products.Add(product);
@@ -124,14 +149,15 @@ public class Seed
         product.Variants.Add(variantLarge);
     }
 
-    public static void CreateShirt2(CatalogContext context)
+    public static async Task CreateShirt2(CatalogContext context)
     {
         var product = new Product()
         {
             Id = Guid.NewGuid().ToString(),
             Name = "T-shirt",
             Description = "T-shirt i olika färger",
-            HasVariants = true
+            HasVariants = true,
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Clothes")
         };
 
         context.Products.Add(product);
@@ -346,7 +372,8 @@ public class Seed
             Id = Guid.NewGuid().ToString(),
             Name = "Kebabtallrik",
             Description = "Dönnerkebab, nyfriterad pommes frites, sallad, och sås",
-            Price = 89
+            Price = 89,
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Food")
         };
 
         context.Products.Add(product);
@@ -395,7 +422,8 @@ public class Seed
             Id = Guid.NewGuid().ToString(),
             Name = "Herrgårdsstek",
             Description = "Vår fina stek med pommes och vår hemlagade bearnaise sås",
-            Price = 179
+            Price = 179,
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Food")
         };
 
         context.Products.Add(product);
@@ -456,7 +484,8 @@ public class Seed
             Id = Guid.NewGuid().ToString(),
             Name = "Pizza",
             Description = "Custom pizza",
-            Price = 40
+            Price = 40,
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Food")
         };
 
         context.Products.Add(product);
@@ -603,7 +632,8 @@ public class Seed
             Id = Guid.NewGuid().ToString(),
             Name = "Sallad",
             Description = "Din egna sallad",
-            Price = 52
+            Price = 52,
+            Group = await context.ProductGroups.FirstAsync(x => x.Name == "Food")
         };
 
         context.Products.Add(product);

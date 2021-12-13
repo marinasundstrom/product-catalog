@@ -54,6 +54,31 @@ namespace Catalog.Server.Controllers
             return Ok(await api.CreateProduct(data));
         }
 
+        [HttpGet("Groups")]
+        public async Task<ActionResult<IEnumerable<ApiProductGroup>>> GetProductGroups()
+        {
+            return Ok(await api.GetProductGroups());
+        }
+
+        [HttpPost("Groups")]
+        public async Task<ActionResult<ApiProductGroup>> CreateProductGroup(ApiCreateProductGroup data)
+        {
+            return Ok(await api.CreateProductGroup(data));
+        }
+
+        [HttpPut("Groups/{productGroupId}")]
+        public async Task<ActionResult<ApiProductGroup>> UpdateProductGroup(string productGroupId, ApiUpdateProductGroup data)
+        {
+            return Ok(await api.UpdateProductGroup(productGroupId, data));
+        }
+
+        [HttpDelete("Groups/{productGroupId}")]
+        public async Task<ActionResult> DeleteProductGroup(string productGroupId)
+        {
+            await api.DeleteProductGroup(productGroupId);
+            return Ok();
+        }
+
         [HttpGet("{productId}/Options/Groups")]
         public async Task<ActionResult<IEnumerable<ApiOptionGroup>>> GetOptionGroups(string productId)
         {

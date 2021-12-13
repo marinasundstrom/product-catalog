@@ -63,7 +63,11 @@ public class ProductGroup
 
     public string? Description { get; set; }
 
+    public ProductGroup? Parent { get; set; }
+
     public string? Image { get; set; }
+
+    public List<ProductGroup> SubGroups { get; } = new List<ProductGroup>();
 
     public List<Product> Products { get; } = new List<Product>();
 }
@@ -87,6 +91,8 @@ public class Product
     public decimal? Price { get; set; }
 
     public bool HasVariants { get; set; } = false;
+
+    public bool? AllCustom { get; set; }
 
     public List<ProductVariant> Variants { get; } = new List<ProductVariant>();
 

@@ -51,6 +51,8 @@ else
 
             <p>@vm.Description</p>
 
+            <p>@product.Group?.Name</p>
+
             @if (vm.Sku is not null)
             {
                 <p class="mb-4">SKU: @vm.Sku</p>
@@ -103,11 +105,11 @@ else
                             else
                             {
                                 @*
-                                    @if(optionGroup.Max == 1)
-                                    {
+                            @if(optionGroup.Max == 1)
+                            {
 
-                                    }
-                                    else { }
+                            }
+                            else { }
                                 *@
                                 <div class="form-check">
                                     <InputCheckbox class="form-check-input" @bind-Value="option.IsSelected"
@@ -129,24 +131,24 @@ else
                 <a class="btn btn-secondary mt-4" href="/products/@ProductId/edit"><i class="oi oi-pencil"></i> Edit</a>
 
                 @*
-                    @if (product.HasVariants)
-                    {
-                        <div class="form-group">
-                            <label>Variants</label>
-                            <select class="form-control">
-                                @foreach (var variant in variants)
-                                {
-                                    <option value="@variant.Id">
-                                        @variant.Description
-                                    @if (variant.Price is not null)
-                                    {
-                                        <text> (@variant.Price?.ToString("c"))</text>
-                                    }
-                                </option>
+            @if (product.HasVariants)
+            {
+                <div class="form-group">
+                    <label>Variants</label>
+                    <select class="form-control">
+                        @foreach (var variant in variants)
+                        {
+                            <option value="@variant.Id">
+                                @variant.Description
+                            @if (variant.Price is not null)
+                            {
+                                <text> (@variant.Price?.ToString("c"))</text>
                             }
-                            </select>
-                        </div>
+                        </option>
                     }
+                    </select>
+                </div>
+            }
                 *@
             </EditForm>
 

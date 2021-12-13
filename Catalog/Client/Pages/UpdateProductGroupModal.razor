@@ -16,18 +16,6 @@
         <ValidationMessage For="() => Description" />
     </div>
 
-    <div class="form-group">
-        <label>Min</label>
-        <InputNumber class="form-control" @bind-Value="Min" />
-        <ValidationMessage For="() => Min" />
-    </div>
-
-    <div class="form-group">
-        <label>Max</label>
-        <InputNumber class="form-control" @bind-Value="Max" />
-        <ValidationMessage For="() => Max" />
-    </div>
-
     <div class="mt-4">
         <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
 
@@ -39,9 +27,7 @@
 @code {
     [CascadingParameter] BlazoredModalInstance Modal { get; set; }
 
-    [Parameter] public string ProductId { get; set; }
-
-    [Parameter] public ApiOptionGroup OptionGroup { get; set; }
+    [Parameter] public ApiProductGroup ProductGroup { get; set; }
 
     [Required]
     public string Name { get; set; }
@@ -54,22 +40,18 @@
 
     protected override void OnInitialized()
     {
-        Name = OptionGroup.Name;
-        Description = OptionGroup.Description;
-        Min = OptionGroup.Min;
-        Max = OptionGroup.Max;
+        Name = ProductGroup.Name;
+        Description = ProductGroup.Description;
     }
 
     async Task OnSubmit()
     {
-        ApiUpdateProductOptionGroup data = new()
+        ApiUpdateProductGroup data = new()
         {
             Name = Name,
             Description = Description,
-            Min = Min,
-            Max = Max
         };
-        var result = await ProductsClient.UpdateOptionGroupAsync(ProductId, OptionGroup.Id, data);
+        var result = await ProductsClient.UpdateProductGroupAsync(ProductGroup.Id, data);
         await Modal.CloseAsync(ModalResult.Ok(result));
     }
 
