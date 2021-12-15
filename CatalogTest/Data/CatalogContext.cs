@@ -34,6 +34,9 @@ public class CatalogContext : DbContext
 
         modelBuilder.Entity<Option>()
             .HasOne(p => p.DefaultValue);
+
+        modelBuilder.Entity<VariantValue>()
+         .HasOne(m => m.Value).WithMany(m => m.VariantValues).OnDelete(DeleteBehavior.NoAction);
     }
 
     public DbSet<ProductGroup> ProductGroups { get; set; } = null!;
@@ -194,6 +197,8 @@ public class OptionValue
     public string? SKU { get; set; }
 
     public decimal? Price { get; set; }
+
+    public List<VariantValue> VariantValues { get; } = new List<VariantValue>();
 }
 
 public class ProductVariant

@@ -5,12 +5,16 @@ using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var configuration = builder.Configuration;
+
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-builder.Services.AddSqlite<CatalogContext>("Data Source=mydb.db");
+//builder.Services.AddSqlite<CatalogContext>("Data Source=mydb.db");
+
+builder.Services.AddSqlServer<CatalogContext>(configuration.GetConnectionString("mssql"));
 
 // Register the Swagger services
 builder.Services.AddOpenApiDocument(config =>
