@@ -1,94 +1,62 @@
 ﻿@page "/"
 @page "/products"
 @inject IProductsClient ProductsClient
-@inject IModalService ModalService
+@inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Products</PageTitle>
 
-<section class="py-5 text-center container">
-    <div class="row py-lg-5">
-        <div class="col-lg-6 col-md-8 mx-auto">
-            <h1 class="fw-light">Products</h1>
-            @*
-                <p class="lead text-muted">Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don’t simply skip over it entirely.</p>
-                <p>
-                    <a href="#" class="btn btn-primary my-2">Main call to action</a>
-                    <a href="#" class="btn btn-secondary my-2">Secondary action</a>
-                </p>
-            *@
+<section>
+    <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-12">Products</MudText>
 
-        <p>
-            <button @onclick="CreateProduct" class="btn btn-secondary my-2">Create product</button>
-            <a class="btn btn-secondary my-2" href="/products/list">View all products</a>
-
-        </p>
-        </div>
-    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateProduct" StartIcon="@Icons.Material.Filled.Add" Class="my-2">Create product</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Link="/products/list">View all products</MudButton>
 </section>
 
-<div class="album py-5 bg-light">
-    <div class="container">
-
+<div class="py-5">
         <div class="mb-4">
             @if (productGroups is not null)
             {
-                <a href="#" @onclick="async () => await SetGroup(null!)">
-                    <span class="badge rounded-pill bg-primary me-2">All</span>
-                </a>
+                <MudChip OnClick="async () => await SetGroup(null!)">All</MudChip>
 
                 foreach (var pg in productGroups)
                 {
-                    <a href="#" @onclick="async () => await SetGroup(pg.Id)">
-                        <span class="badge rounded-pill bg-secondary me-2">@pg.Name</span>
-                    </a>
+                    <MudChip OnClick="async () => await SetGroup(pg.Id)">@pg.Name</MudChip>
                 }
             }
         </div>
 
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-            @if (products == null)
-            {
-                <span>Loading...</span>
-            }
-            else
-            {
+        @if (products == null)
+        {
+            <span>Loading...</span>
+        }
+        else
+        {
+            <MudGrid Spacing="6">
                 @foreach (var product in products)
                 {
-                    <div class="col">
-                        <div class="card shadow-sm">
-                            @if (product.Image is not null)
-                            {
-                                <img class="bd-placeholder-img card-img-top" style="width: 100%; height: 225px" src="@product.Image" />
-                            }
-                            else
-                            {
-                                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
-                            }
+                    <MudItem xs="12" sm="6" md="4" lg="4">
+                        <a href="/products/@product.Id">
 
-                            <div class="card-body">
-                                <h4 class="card-title">@product.Name</h4>
-                                <p class="card-text">@product.Description</p>
-                                @if (product.HasVariants)
+                            <div class="d-flex justify-center">
+                                @if (product.Image is not null)
                                 {
-                                    <small> Har flera varianter</small>
+                                    <img class="bd-placeholder-img card-img-top" style="width: 100%; height: 225px" src="@product.Image" />
                                 }
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="btn-group">
-                                        <a href="/products/@product.Id" class="btn btn-sm btn-outline-secondary">View</a>
-                                        @* <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button> *@
-                                    </div>
-
-                                    <small class="text-muted">@product.Price?.ToString("c")</small>
-                                </div>
+                                else
+                                {
+                                    <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
+                                }
                             </div>
-                        </div>
-                    </div>
+                            <MudText Typo="Typo.h4" Class="mt-4 mb-2" Style="text-align: center;">
+                                @product.Name
+                            </MudText>
+                            <small class="text-muted">@product.Price?.ToString("c")</small>
+                        </a>
+                    </MudItem>
                 }
-            }
-
-        </div>
-    </div>
+            </MudGrid>
+        }
 </div>
 
 @code
@@ -103,12 +71,13 @@
     protected override async Task OnInitializedAsync()
     {
         productGroups = await ProductsClient.GetProductGroupsAsync(false);
-        products = await ProductsClient.GetProductsAsync(false, GroupId);
+        var result = await ProductsClient.GetProductsAsync(false, GroupId, 0, 100);
+        products = result.Items;
     }
 
     async Task CreateProduct()
     {
-        var modalRef = ModalService.Show<CreateProductModal>("New Product");
+        var modalRef = DialogService.Show<CreateProductModal>("New Product");
 
         var result = await modalRef.Result;
 
@@ -121,7 +90,8 @@
 
     async Task SetGroup(string groupId)
     {
-        products = await ProductsClient.GetProductsAsync(false, groupId);
+        var result = await ProductsClient.GetProductsAsync(false, groupId, 0, 100);
+        products = result.Items;
         NavigationManager.NavigateTo($"/products?groupId={groupId}", replace: true);
     }
 }

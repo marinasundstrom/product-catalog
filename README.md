@@ -25,9 +25,9 @@ Sample products:
 
 ## Technology
 
-.NET 6, ASP.NET Core, Blazor UI based on Bootstrap 5.
+.NET 6, ASP.NET Core, Blazor UI based on MudBlazor.
 
-Entity Framework Core and Sqlite Database
+Entity Framework Core and SQL Server database
 
 Database structure is based on this [post](https://stackoverflow.com/questions/24923469/modeling-product-variants) in StackOverlow.
 

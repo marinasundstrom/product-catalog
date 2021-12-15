@@ -1,9 +1,8 @@
 ﻿@page "/products/{productId}/edit"
-@layout PageLayout
 @inject NavigationManager NavigationManager
 @inject IProductsClient ProductsClient
-@inject IModalService ModalService
-@inject IToastService ToastService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Product</PageTitle>
 
@@ -15,14 +14,13 @@ else
 {
     <PageTitle>@product.Name (@product.Sku)</PageTitle>
 
-    <h3>@product.Name</h3>
-    <a href="#" @onclick:preventDefault @onclick="EditDetails"><i class="oi oi-pencil"></i></a>
+    <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-12">@product.Name</MudText>
 
-    <div class="card mb-2">
-        <div class="card-body">
-            <h5 class="card-title">
-                Details
-            </h5>
+    <MudCard class="mb-4">
+        <MudCardHeader>
+            <MudText Typo="Typo.h5" Align="Align.Center">Details</MudText>
+        </MudCardHeader>
+        <MudCardContent>
             <dl>
                 @if (!string.IsNullOrEmpty(product.Description))
                 {
@@ -48,63 +46,75 @@ else
                     <dd>@product.Price?.ToString("c")</dd>
                 }
             </dl>
-        </div>
-    </div>
 
+            <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="EditDetails" Class="my-2">Edit details</MudButton>
+        </MudCardContent>
+    </MudCard>
 
     <div class="form-group mb-4">
-        <label>Visibility</label>
-        <MySelect TItem="ProductVisibility?" Items="@VisibilityOptions" Value="@product.Visibility" ValueChanged="async (e) => await UpdateVisibility((ProductVisibility?)e)" Selector="(x) => x">
-
-        </MySelect>
+        <MudSelect T="ProductVisibility?" Label="Visibility" Variant="Variant.Outlined" Value="@product.Visibility" ValueChanged="async (e) => await UpdateVisibility((ProductVisibility?)e)" ToStringFunc="x => x?.ToString()">
+            @foreach (var item in VisibilityOptions)
+            {
+                <MudSelectItem Value="@item" />
+            }
+        </MudSelect>
     </div>
 
-    <h4>Options</h4>
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mt-6 mb-2">Options</MudText>
 
-    <div>
-        <button class="btn btn-secondary me-2" @onclick="CreateOption"><i class="oi oi-plus" /> Create option</button>
-        <a class="btn btn-secondary" href="/products/@product.Id/options/groups">Option groups</a>
+    <div class="mb-4">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateOption" StartIcon="@Icons.Material.Filled.Add">Create option</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" Link="@($"/products/{product.Id}/options/groups")">Option groups</MudButton>
     </div>
 
     if (options is not null)
     {
         @foreach (var group in options
-    .ToList()
-    .GroupBy(x => x.Group?.Name))
+.ToList()
+.GroupBy(x => x.Group?.Name))
         {
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>@(group.Key ?? "Option")</th>
-                        <th>Multiple values</th>
-                        <th>Values</th>
-                        <th>Default value</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var option in group)
-                    {
-                        <tr>
-                            <td>@option.Name</td>
-                            <td>@(option.OptionType == OptionType.Multiple)</td>
-                            <td>@string.Join(", ", option.Values.Select(x => x.Name))</td>
-                            <td>@option.DefaultValue?.Name</td>
-                            <td>
-                                <a href="#" @onclick:preventDefault @onclick="async () => await UpdateOption(option)"><i class="oi oi-pencil"></i></a>
-                                <a href="#" @onclick:preventDefault @onclick="async () => await DeleteOption(option)"><i class="oi oi-trash"></i></a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+            @if (group.Key is not null)
+            {
+                <MudText Typo="Typo.h5" Align="Align.Left" Class="mb-2 mt-6">@group.Key</MudText>
+            }
+
+            <MudTable T="ApiOption" Items="@group" Dense="true" Hover="true" @ref="table" Class="mb-4">
+
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Multiple values</MudTh>
+                    <MudTh>Values</MudTh>
+                    <MudTh>Default value</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+
+                <RowTemplate Context="option">
+                    <MudTd DataLabel="Name">@option.Name</MudTd>
+                    <MudTd DataLabel="Multiple values">@(option.OptionType == OptionType.Multiple)</MudTd>
+                    <MudTd DataLabel="Values">@string.Join(", ", option.Values.Select(x => x.Name))</MudTd>
+                    <MudTd DataLabel="Default value">@option.DefaultValue?.Name</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="async () => await UpdateOption(option)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteOption(option)" />
+                    </MudTd>
+                </RowTemplate>
+
+                <NoRecordsContent>
+                    <MudText>No matching records found</MudText>
+                </NoRecordsContent>
+
+                <LoadingContent>
+                    <MudText>Loading...</MudText>
+                </LoadingContent>
+
+            </MudTable>
         }
     }
 
     @if (product.HasVariants)
     {
 
-        <h4 class="mt-4">Variants</h4>
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mt-6 mb-2">Variants</MudText>
 
         @if (!options.Any())
         {
@@ -112,55 +122,59 @@ else
         }
         else
         {
-            <button class="btn btn-secondary" @onclick="CreateVariant"><i class="oi oi-plus" /> Create variant</button>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateVariant" StartIcon="@Icons.Material.Filled.Add">Create variant</MudButton>
 
             @if (variants is not null)
             {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>SKU</th>
-                            <th>Price</th>
+                <MudTable T="ApiProductVariant" Items="@variants"
+                          Dense="true" Hover="true" Class="mb-4">
 
-                            @if (variants is not null && variants.Any())
-                            {
-                                @foreach (var option in variants.First().Options)
-                                {
-                                    <th>@option.Name</th>
-                                }
-                            }
+                    <HeaderContent>
+                        <MudTh><MudTableSortLabel SortLabel="nr_field" T="ApiProductVariant">Name</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="sign_field" T="ApiProductVariant">SKU</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="name_field" T="ApiProductVariant">Price</MudTableSortLabel></MudTh>
 
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (variants is not null)
+                        @if (variants is not null && variants.Any())
                         {
-                            @foreach (var variant in variants)
+                            @foreach (var option in variants.First().Options)
                             {
-                                <tr>
-                                    <td>@variant.Name</td>
-                                    <td>@variant.Sku</td>
-                                    <td>@variant.Price?.ToString("c")</td>
-
-                                    @if (variant.Options is not null)
-                                    {
-                                        foreach (var option in variant.Options)
-                                        {
-                                            <td>@option.Value</td>
-                                        }
-                                    }
-
-                                    <td>
-                                        <a href="#" @onclick:preventDefault @onclick="async () => await UpdateVariant(variant)"><i class="oi oi-pencil"></i></a>
-                                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteVariant(variant)"><i class="oi oi-trash"></i></a>
-                                    </td>
-                                </tr>
+                                <MudTh><MudTableSortLabel SortLabel="name_field" T="ApiProductVariant">@option.Name</MudTableSortLabel></MudTh>
                             }
                         }
-                    </tbody>
-                </table>
+
+                        <MudTh></MudTh>
+                    </HeaderContent>
+
+                    <RowTemplate Context="variant">
+                        <MudTd DataLabel="Name">@variant.Name</MudTd>
+                        <MudTd DataLabel="SKU">@variant.Sku</MudTd>
+                        <MudTd DataLabel="SKU">@variant.Price?.ToString("c")</MudTd>
+
+                        @if (variant.Options is not null)
+                        {
+                            foreach (var option in variant.Options)
+                            {
+                                <MudTd DataLabel="Name">@option.Value</MudTd>
+                            }
+                        }
+
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="async () => await UpdateVariant(variant)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteVariant(variant)" />
+                        </MudTd>
+
+                    </RowTemplate>
+
+                    <NoRecordsContent>
+                        <MudText>No matching records found</MudText>
+                    </NoRecordsContent>
+
+                    <LoadingContent>
+                        <MudText>Loading...</MudText>
+                    </LoadingContent>
+
+                </MudTable>
+
             }
         }
     }
@@ -168,6 +182,8 @@ else
 
 @code
 {
+    MudTable<ApiOption> table;
+
     ApiProduct? product;
     List<ApiProductVariant>? variants;
     List<ApiOption>? options;
@@ -193,21 +209,21 @@ else
 
             product.Visibility = value;
 
-            ToastService.ShowInfo($"The product \"{product.Name}\" is now {product.Visibility.ToString().ToLower()}.");
+            Snackbar.Add($"The product \"{product.Name}\" is now {product.Visibility.ToString().ToLower()}.", Severity.Success);
         }
         catch (Exception exc)
         {
-            ToastService.ShowError(exc.Message, "Exception");
+            Snackbar.Add(exc.Message, Severity.Error);
         }
     }
 
     async Task CreateOption()
     {
-        ModalParameters parameters = new();
+        DialogParameters parameters = new();
         parameters.Add(nameof(CreateProductOptionModal.ProductId), ProductId);
         parameters.Add(nameof(CreateProductOptionModal.Product), product);
 
-        var modalRef = ModalService.Show<CreateProductOptionModal>("New Option", parameters);
+        var modalRef = DialogService.Show<CreateProductOptionModal>("New Option", parameters);
 
         var result = await modalRef.Result;
 
@@ -218,12 +234,12 @@ else
 
     async Task UpdateOption(ApiOption option)
     {
-        ModalParameters parameters = new();
+        DialogParameters parameters = new();
         parameters.Add(nameof(UpdateProductOptionModal.ProductId), ProductId);
         parameters.Add(nameof(UpdateProductOptionModal.Option), option);
         parameters.Add(nameof(UpdateProductOptionModal.Product), product);
 
-        var modalRef = ModalService.Show<UpdateProductOptionModal>("Update Option", parameters);
+        var modalRef = DialogService.Show<UpdateProductOptionModal>("Update Option", parameters);
 
         var result = await modalRef.Result;
 
@@ -236,9 +252,9 @@ else
 
     async Task DeleteOption(ApiOption option)
     {
-        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the option?", yesText: "Yes", noText: "No");
-        var modalResult = await modalRef.Result;
-        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        var modalResult = await DialogService.ShowMessageBox("Delete the option?", "This cannot be undone.", yesText: "Yes", noText: "No");
+        if (!modalResult.GetValueOrDefault())
+
         {
             return;
         }
@@ -250,10 +266,10 @@ else
 
     async Task CreateVariant()
     {
-        ModalParameters parameters = new();
+        DialogParameters parameters = new();
         parameters.Add(nameof(CreateVariantModal.ProductId), ProductId);
 
-        var modalRef = ModalService.Show<CreateVariantModal>("New Variant", parameters);
+        var modalRef = DialogService.Show<CreateVariantModal>("New Variant", parameters);
 
         var result = await modalRef.Result;
 
@@ -264,11 +280,11 @@ else
 
     async Task UpdateVariant(ApiProductVariant variant)
     {
-        ModalParameters parameters = new();
+        DialogParameters parameters = new();
         parameters.Add(nameof(UpdateVariantModal.ProductId), ProductId);
         parameters.Add(nameof(UpdateVariantModal.Variant), variant);
 
-        var modalRef = ModalService.Show<UpdateVariantModal>("Update Variant", parameters);
+        var modalRef = DialogService.Show<UpdateVariantModal>("Update Variant", parameters);
 
         var result = await modalRef.Result;
 
@@ -281,9 +297,8 @@ else
 
     async Task DeleteVariant(ApiProductVariant variant)
     {
-        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the variant?", yesText: "Yes", noText: "No");
-        var modalResult = await modalRef.Result;
-        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        var modalResult = await DialogService.ShowMessageBox("Delete the variant?", "This cannot be undone.", yesText: "Yes", noText: "No");
+        if (!modalResult.GetValueOrDefault())
         {
             return;
         }
@@ -295,11 +310,11 @@ else
 
     async Task EditDetails()
     {
-        ModalParameters parameters = new();
+        DialogParameters parameters = new();
         parameters.Add(nameof(UpdateProductDetailsModal.ProductId), ProductId);
         parameters.Add(nameof(UpdateProductDetailsModal.Product), product);
 
-        var modalRef = ModalService.Show<UpdateProductDetailsModal>("Update Details", parameters);
+        var modalRef = DialogService.Show<UpdateProductDetailsModal>("Update Details", parameters);
 
         var result = await modalRef.Result;
 

@@ -1,76 +1,70 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @inject IProductsClient ProductsClient
-@inject IToastService ToastService
+@inject ISnackbar Snackbar
 
 <EditForm Model="@this" OnValidSubmit="OnSubmit">
-    <DataAnnotationsValidator />
+    <ObjectGraphDataAnnotationsValidator />
 
-    <div class="form-group">
-        <label>Name</label>
-        <InputText class="form-control" @bind-Value="Name" />
-        <ValidationMessage For="() => Name" />
-    </div>
+    <MudDialog>
+        <DialogContent>
 
-    <div class="form-group">
-        <label>Description</label>
-        <InputTextArea class="form-control" @bind-Value="Description" />
-        <ValidationMessage For="() => Description" />
-    </div>
+            <MudTextField Label="Name" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Name" For="() => Name" />
 
-    <div class="form-group">
-        <label>SKU</label>
-        <InputText class="form-control" @bind-Value="SKU" />
-        <ValidationMessage For="() => SKU" />
-    </div>
+            <MudTextField Lines="3" Class="mb-6" Label="Description" Variant="Variant.Outlined" @bind-Value="Description" For="() => Description" />
 
-    <div class="form-group">
-        <label>Price</label>
-        <InputNumber type="currency" class="form-control" @bind-Value="Price" />
-        <ValidationMessage For="() => Price" />
-    </div>
+            <MudTextField Label="SKU" Class="mb-6" Variant="Variant.Outlined" @bind-Value="SKU" For="() => SKU" />
 
-    <div class="form-group">
-        @if (Options is not null)
-        {
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Option</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Options is not null)
-                    {
-                        @foreach (var option in Options)
-                        {
+            <MudNumericField Label="Price" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Price" For="() => Price" />
+
+            <div class="form-group">
+                @if (Options is not null)
+                {
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>@option.Name</td>
-
-                                @if (option.Values is not null)
-                                {
-                                    <td>
-                                        <MySelect Items="option.Values" @bind-Value="option.SelectedValue" Selector="(x) => x.Name" />
-                                    </td>
-                                }
+                                <th>Option</th>
+                                <th>Value</th>
                             </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        }
-    </div>
+                        </thead>
+                        <tbody>
+                            @if (Options is not null)
+                            {
+                                @foreach (var option in Options)
+                                {
+                                    <tr>
+                                        <td>@option.Name</td>
 
-    <div class="mt-4">
-        <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
+                                        @if (option.Values is not null)
+                                        {
+                                            <td>
+                                                <MudSelect T="ApiOptionValue" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="option.SelectedValue" ToStringFunc="x => x?.Name"
+                                                           For="() => option.SelectedValue">
+                                                    @foreach (var item in option.Values)
+                                                    {
+                                                        <MudSelectItem Value="@item" />
+                                                    }
+                                                </MudSelect>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
 
-        <button class="btn btn-primary me-2">Create</button>
-    </div>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => Modal.Cancel()">Cancel</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary">Create</MudButton>
+        </DialogActions>
+    </MudDialog>
 
 </EditForm>
 
 @code {
-    [CascadingParameter] BlazoredModalInstance Modal { get; set; }
+    [CascadingParameter] MudDialogInstance Modal { get; set; }
 
     [Parameter] public string ProductId { get; set; }
 
@@ -132,11 +126,11 @@
         try
         {
             var result = await ProductsClient.CreateVariantAsync(ProductId, data);
-            await Modal.CloseAsync(ModalResult.Ok(result));
+            Modal.Close(DialogResult.Ok(result));
         }
         catch (ApiException<ProblemDetails> exc)
         {
-            ToastService.ShowError(exc.Result.Detail);
+            Snackbar.Add(exc.Result.Detail, Severity.Error);
         }
     }
 

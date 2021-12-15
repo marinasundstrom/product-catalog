@@ -1,5 +1,4 @@
 ﻿@page "/products/{productId}"
-@layout PageLayout
 @inject IProductsClient ProductsClient
 
 <PageTitle>Product</PageTitle>
@@ -12,8 +11,8 @@ else
 {
     <PageTitle>@vm.Name (@vm.Sku)</PageTitle>
 
-    <div class="row">
-        <div class="col-md-4">
+    <MudGrid Spacing="6">
+        <MudItem xs="12" sm="12" md="6" lg="6">
             <div class="card shadow-sm">
                 @if (vm.Image is not null)
                 {
@@ -23,139 +22,112 @@ else
                 {
                     <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
                 }
-                @*
-
-                    <div class="card-body">
-                        <h4 class="card-title">@product.Name</h4>
-                        <p class="card-text">@product.Description</p>
-                        @if (product.HasVariants)
-                        {
-                            <small> Har flera varianter</small>
-                        }
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group">
-                                <a href="/products/@product.Id" class="btn btn-sm btn-outline-secondary">View</a>
-                                @* <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
-                            </div>
-
-                            <small class="text-muted">@product.Price?.ToString("c")</small>
-                        </div>
-                    </div>
-
-                *@
             </div>
-        </div>
+        </MudItem>
 
-        <div class="col-md-8 mt-2">
-            <h3>@vm.Name</h3>
+        <MudItem xs="12" sm="12" md="6" lg="6">
+            <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-12">@vm.Name</MudText>
 
-            <p>@vm.Description</p>
+            <MudCard class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5" Align="Align.Center">Details</MudText>
+                </MudCardHeader>
+                <MudCardContent>
 
-            <p>@product.Group?.Name</p>
+                    <p>@vm.Description</p>
 
-            @if (vm.Sku is not null)
-            {
-                <p class="mb-4">SKU: @vm.Sku</p>
-            }
+                    <p>@product.Group?.Name</p>
 
-            @if (vm.Price is not null)
-            {
-                <p class="mb-4"> @vm.Price?.ToString("c")</p>
-            }
-
-            @if (vm.Total > 0)
-            {
-                <p class="mb-4"> @vm.Total.ToString("c")</p>
-            }
-
-            @if (variant is not null)
-            {
-                <h4>@variant.Description</h4>
-
-                @if (variant.Sku is not null)
-                {
-                    <p class="mb-4">SKU: @variant.Sku</p>
-                }
-
-                <p class="mb-4"> @variant.Price.GetValueOrDefault().ToString("c")</p>
-            }
-
-            <EditForm Model="@vm">
-
-                @foreach (var optionGroup in vm.OptionGroups)
-                {
-                    if (optionGroup.Name is not null)
+                    @if (vm.Sku is not null)
                     {
-                        <h4 class="mt-4">@optionGroup.Name</h4> @if (optionGroup.Max is not null)
-                        {<small class="mb-2">Max @optionGroup.Max</small>}
+                        <p class="mb-4">SKU: @vm.Sku</p>
                     }
 
-                    @foreach (var option in optionGroup.Options)
+                    @if (vm.Price is not null)
                     {
-                        var optionValues = option.Values;
-
-                        <div class="form-group">
-
-                            @if (optionValues.Any())
-                            {
-                                <label>@option.Name</label>
-
-                                <MySelect TItem="OptionValueVM" Items="optionValues" Value="option.SelectedValue" ValueChanged="async (value) => { option.SelectedValue = value; if (product.HasVariants) { await Update(vm, option); }; }" Selector="Selector" />
-                            }
-                            else
-                            {
-                                @*
-                            @if(optionGroup.Max == 1)
-                            {
-
-                            }
-                            else { }
-                                *@
-                                <div class="form-check">
-                                    <InputCheckbox class="form-check-input" @bind-Value="option.IsSelected"
-                                                   disabled="@(optionGroup.Max != null && !option.IsSelected && optionGroup.Options.Count(x => x.IsSelected) == optionGroup.Max)" />
-                                    <label class="form-check-label">
-                                        @option.Name
-                                        @if (option.Price is not null)
-                                        {
-                                            <text> (+ @option.Price?.ToString("c"))</text>
-                                        }
-                                    </label>
-                                </div>
-                            }
-
-                        </div>
+                        <p class="mb-4"> @vm.Price?.ToString("c")</p>
                     }
-                }
 
-                <a class="btn btn-secondary mt-4" href="/products/@ProductId/edit"><i class="oi oi-pencil"></i> Edit</a>
+                    @if (vm.Total > 0)
+                    {
+                        <p class="mb-4"> @vm.Total.ToString("c")</p>
+                    }
 
-                @*
-            @if (product.HasVariants)
-            {
-                <div class="form-group">
-                    <label>Variants</label>
-                    <select class="form-control">
-                        @foreach (var variant in variants)
+                    @if (variant is not null)
+                    {
+                        <MudText Typo="Typo.h6" Align="Align.Left" Class="mb-2">@variant.Description</MudText>
+
+                        @if (variant.Sku is not null)
                         {
-                            <option value="@variant.Id">
-                                @variant.Description
-                            @if (variant.Price is not null)
-                            {
-                                <text> (@variant.Price?.ToString("c"))</text>
-                            }
-                        </option>
+                            <p class="mb-4">SKU: @variant.Sku</p>
+                        }
+
+                        <p class="mb-4"> @variant.Price.GetValueOrDefault().ToString("c")</p>
                     }
-                    </select>
-                </div>
-            }
-                *@
-            </EditForm>
 
-            @*<button class="btn btn-primary" @onclick="Update">Update</button>*@
+                    <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" Link="@($"/products/{ProductId}/edit")" Class="my-2">Edit</MudButton>
 
-        </div>
-    </div>
+                </MudCardContent>
+            </MudCard>
+
+            <MudCard class="mb-2">
+                <MudCardContent>
+
+                    <EditForm Model="@vm">
+
+                        @foreach (var optionGroup in vm.OptionGroups)
+                        {
+                            if (optionGroup.Name is not null)
+                            {
+                                <MudText Typo="Typo.h5" Align="Align.Left" Class="mb-4">@optionGroup.Name</MudText>
+
+                                @if (optionGroup.Max is not null)
+                                {<small class="mb-2">Max @optionGroup.Max</small>}
+                            }
+
+                            if (optionGroup.Name is null && vm.OptionGroups.Count() == 1)
+                            {
+                                <MudText Typo="Typo.h5" Align="Align.Left" Class="mb-4">Options</MudText>
+                            }
+
+                            <div class="form-group mb-6">
+
+                                @foreach (var option in optionGroup.Options)
+                                {
+                                    var optionValues = option.Values;
+
+                                    <div>
+
+                                        @if (optionValues.Any())
+                                        {
+                                            <MudSelect T="OptionValueVM" Class="mb-6" Label="@option.Name" Variant="Variant.Outlined" Value="option.SelectedValue" ValueChanged="async (e) => { option.SelectedValue = e; if (product.HasVariants) { await Update(vm, option); }; }" ToStringFunc="x => x.Name">
+                                                @foreach (var item in optionValues)
+                                                {
+                                                    <MudSelectItem Value="@item" />
+                                                }
+                                            </MudSelect>
+                                        }
+                                        else
+                                        {
+                                            <MudCheckBox Label="@option.Name" @bind-Checked="option.IsSelected" Disabled="@(optionGroup.Max != null && !option.IsSelected && optionGroup.Options.Count(x => x.IsSelected) == optionGroup.Max)" />
+                                            @if (option.Price is not null)
+                                            {
+                                                <text> (+ @option.Price?.ToString("c"))</text>
+                                            }
+                                        }
+
+                                    </div>
+                                }
+
+                            </div>
+                        }
+
+                    </EditForm>
+
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 }
 
 @code

@@ -4,40 +4,27 @@
 <EditForm Model="@this" OnValidSubmit="OnSubmit">
     <DataAnnotationsValidator />
 
-    <div class="form-group">
-        <label>Name</label>
-        <InputText class="form-control" @bind-Value="Name" />
-        <ValidationMessage For="() => Name" />
-    </div>
+    <MudDialog>
+        <DialogContent>
 
-    <div class="form-group">
-        <label>Description</label>
-        <InputTextArea class="form-control" @bind-Value="Description" />
-        <ValidationMessage For="() => Description" />
-    </div>
+            <MudTextField Label="Name" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Name" For="() => Name" />
 
-    <div class="form-group">
-        <label>Min</label>
-        <InputNumber class="form-control" @bind-Value="Min" />
-        <ValidationMessage For="() => Min" />
-    </div>
+            <MudTextField Lines="3" Label="Description" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Description" For="() => Description" />
 
-    <div class="form-group">
-        <label>Max</label>
-        <InputNumber class="form-control" @bind-Value="Max" />
-        <ValidationMessage For="() => Max" />
-    </div>
+            <MudNumericField Label="Min" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Min" For="() => Min" />
 
-    <div class="mt-4">
-        <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
+            <MudNumericField Label="Max" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Max" For="() => Max" />
 
-        <button class="btn btn-primary me-2">Create</button>
-    </div>
-
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => Modal.Cancel()">Cancel</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary">Create</MudButton>
+        </DialogActions>
+    </MudDialog>
 </EditForm>
 
 @code {
-    [CascadingParameter] BlazoredModalInstance Modal { get; set; }
+    [CascadingParameter] MudDialogInstance Modal { get; set; }
 
     [Parameter] public string ProductId { get; set; }
 
@@ -60,7 +47,7 @@
             Max = Max
         };
         var result = await ProductsClient.CreateOptionGroupAsync(ProductId, data);
-        await Modal.CloseAsync(ModalResult.Ok(result));
+        Modal.Close(DialogResult.Ok(result));
     }
 
 }

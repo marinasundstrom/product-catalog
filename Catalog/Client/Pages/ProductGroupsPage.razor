@@ -1,40 +1,36 @@
 ﻿@page "/products/groups"
-@layout PageLayout
 @inject IProductsClient ProductsClient
-@inject IModalService ModalService
+@inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Product Groups</PageTitle>
 
-<h1>Product Groups</h1>
+<MudText Typo="Typo.h3" Align="Align.Center" Class="mb-12">Product Groups</MudText>
 
-<button class="btn btn-secondary my-2" @onclick="CreateGroup"><i class="oi oi-plus" /> Create group</button>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateGroup" StartIcon="@Icons.Material.Filled.Add" Class="my-2">Create group</MudButton>
 
-@if (productGroups is not null)
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var group in productGroups)
-            {
-                <tr>
-                    <td>@group.Name</td>
-                    <td>@group.Description</td>
-                    <td>
-                        <a href="#" @onclick:preventDefault @onclick="async () => await UpdateGroup(group)"><i class="oi oi-pencil"></i></a>
-                        <a href="#" @onclick:preventDefault @onclick="async () => await DeleteGroup(group)"><i class="oi oi-trash"></i></a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<MudTable T="ApiProductGroup" Items="productGroups"
+          Dense="true" Hover="true">
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate Context="group">
+        <MudTd DataLabel="Name">@group.Name</MudTd>
+        <MudTd DataLabel="Description">@group.Description</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="async () => await UpdateGroup(group)" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteGroup(group)" />
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+</MudTable>
 
 @code
 {
@@ -50,9 +46,9 @@
 
     async Task CreateGroup()
     {
-        ModalParameters parameters = new();
+        DialogParameters parameters = new();
 
-        var modalRef = ModalService.Show<CreateProductGroupModal>("Create Group", parameters);
+        var modalRef = DialogService.Show<CreateProductGroupModal>("Create Group", parameters);
 
         var result = await modalRef.Result;
 
@@ -63,10 +59,10 @@
 
     async Task UpdateGroup(ApiProductGroup productGroup)
     {
-        ModalParameters parameters = new();
+        DialogParameters parameters = new();
         parameters.Add(nameof(UpdateProductGroupModal.ProductGroup), productGroup);
 
-        var modalRef = ModalService.Show<UpdateProductGroupModal>("Update Group", parameters);
+        var modalRef = DialogService.Show<UpdateProductGroupModal>("Update Group", parameters);
 
         var result = await modalRef.Result;
 
@@ -79,9 +75,8 @@
 
     async Task DeleteGroup(ApiProductGroup productGroup)
     {
-        var modalRef = ModalService.ShowMessageBox("The group will be deleted, but the options will remain.\nThis cannot be undone.", "Delete the group?", yesText: "Yes", noText: "No");
-        var modalResult = await modalRef.Result;
-        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        var modalResult = await DialogService.ShowMessageBox("Delete the group?", "The group will be deleted, but the options will remain.\nThis cannot be undone.", yesText: "Yes", noText: "No");
+        if (!modalResult.GetValueOrDefault())
         {
             return;
         }

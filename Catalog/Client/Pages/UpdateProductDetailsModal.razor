@@ -4,54 +4,44 @@
 <EditForm Model="@this" OnValidSubmit="OnSubmit">
     <DataAnnotationsValidator />
 
-    <div class="form-group my-2">
-        <label>Name</label>
-        <InputText class="form-control" @bind-Value="Name" />
-        <ValidationMessage For="() => Name" />
-    </div>
+    <MudDialog>
+        <DialogContent>
 
-    <div class="form-group">
-        <label>Description</label>
-        <InputTextArea class="form-control" @bind-Value="Description" />
-        <ValidationMessage For="() => Description" />
-    </div>
+            <MudTextField Label="Name" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Name" For="() => Name" />
 
-    @if (Group is not null)
-    {
-        <div class="form-group">
-            <label>Group</label>
-            <MySelect Items="Groups" ShowDefaultOption="true" @bind-Value="Group" Selector="(x) => x?.Name" />
-            <ValidationMessage For="() => Group" />
-        </div>
-    }
+            <MudTextField Lines="3" Class="mb-6" Label="Description" Variant="Variant.Outlined" @bind-Value="Description" For="() => Description" />
 
-    @if (!Product.HasVariants)
-    {
-        <div class="form-group">
-            <label>SKU</label>
-            <InputText class="form-control" @bind-Value="SKU" />
-            <ValidationMessage For="() => SKU" />
-        </div>
+            @if (Groups is not null)
+            {
+                <MudSelect T="ApiProductGroup" Label="Group" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Group" ToStringFunc="x => x?.Name"
+                           For="() => Group">
+                    @foreach (var item in Groups)
+                    {
+                        <MudSelectItem Value="@item" />
+                    }
+                </MudSelect>
+            }
 
-        <div class="form-group">
-            <label>Price</label>
-            <InputNumber type="currency" class="form-control" @bind-Value="Price" />
-            <ValidationMessage For="() => Price" />
-        </div>
-    }
+            @if (!Product.HasVariants)
+            {
+                <MudTextField Label="SKU" Class="mb-6" Variant="Variant.Outlined" @bind-Value="SKU" For="() => SKU" />
 
-    <div class="mt-4">
-        <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
+                <MudNumericField Label="Price" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Price" For="() => Price" />
+            }
 
-        <button class="btn btn-primary me-2">Save</button>
-    </div>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => Modal.Cancel()">Cancel</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary">Save</MudButton>
+        </DialogActions>
+    </MudDialog>
 
 </EditForm>
 
 @code {
     public IList<ApiProductGroup> Groups { get; set; }
 
-    [CascadingParameter] BlazoredModalInstance Modal { get; set; }
+    [CascadingParameter] MudDialogInstance Modal { get; set; }
 
     [Parameter] public string ProductId { get; set; }
 
@@ -92,7 +82,7 @@
             Price = Price
         };
         await ProductsClient.UpdateProductDetailsAsync(ProductId, data);
-        await Modal.CloseAsync(ModalResult.Ok(data));
+        Modal.Close(DialogResult.Ok(data));
     }
 }
 

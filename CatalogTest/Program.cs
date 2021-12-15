@@ -49,7 +49,7 @@ Console.WriteLine(products.First().Name);
 
 var api = new Api(context);
 var products2 = await api.GetProducts();
-var product = products2.First();
+var product = products2.Items.First();
 
 Console.WriteLine(product.Name);
 

@@ -23,9 +23,11 @@ namespace Catalog.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ApiProduct>>> GetProducts(bool includeUnlisted = false, string? groupId = null /*, bool includeNestedGroups = false */)
+        public async Task<ActionResult<ApiProductsResult>> GetProducts(
+            bool includeUnlisted = false, string? groupId = null,
+            int page = 0, int pageSize = 10 /*, bool includeNestedGroups = false */)
         {
-            return Ok(await api.GetProducts(includeUnlisted, groupId));
+            return Ok(await api.GetProducts(includeUnlisted, groupId, page, pageSize));
         }
 
         [HttpGet("{productId}")]

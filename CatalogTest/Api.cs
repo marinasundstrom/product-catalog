@@ -15,7 +15,7 @@ public class Api
         this.context = context;
     }
 
-    public async Task<IEnumerable<ApiProduct>> GetProducts(bool includeUnlisted = false, string? groupId = null)
+    public async Task<ApiProductsResult> GetProducts(bool includeUnlisted = false, string? groupId = null, int page = 10, int pageSize = 10)
     {
         var query = context.Products
             .AsSplitQuery()
@@ -33,10 +33,16 @@ public class Api
             query = query.Where(x => x.Group.Id == groupId);
         }
 
-        var products = await query.ToArrayAsync();
+        var totalCount = await query.CountAsync();
 
-        return products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.Group == null ? null : new ApiProductGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group?.Parent?.Id),
-            x.SKU, x.Image, x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted));
+        var products = await query
+            .Skip(page * pageSize)
+            .Take(pageSize).AsQueryable()
+            .ToArrayAsync();
+
+        return new ApiProductsResult(products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.Group == null ? null : new ApiProductGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group?.Parent?.Id),
+            x.SKU, x.Image, x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted)),
+            totalCount);
     }
 
     public async Task<ApiProduct?> GetProduct(string productId)
@@ -56,7 +62,6 @@ public class Api
     public async Task<ApiProduct?> CreateProduct(ApiCreateProduct data)
     {
         var group = await context.ProductGroups
-            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == data.GroupId);
 
         var product = new Product()
@@ -472,7 +477,7 @@ public class Api
     {
         var match = await FindVariantCore(productId, null, data.Values.ToDictionary(x => x.OptionId, x => x.ValueId));
 
-        if(match is not null)
+        if (match is not null)
         {
             throw new VariantAlreadyExistsException("Variant with the same options already exists.");
         }
@@ -735,7 +740,7 @@ public class Api
         return values.Select(x => new ApiOptionValue(x.Id, x.Name, x.Name, x.Price, x.Seq));
     }
 
-    private async Task<ProductVariant?> FindVariantCore(string productId, string? productVariantId, IDictionary<string , string?> selectedOptions)
+    private async Task<ProductVariant?> FindVariantCore(string productId, string? productVariantId, IDictionary<string, string?> selectedOptions)
     {
         var query = context.ProductVariants
             .AsSplitQuery()
@@ -748,7 +753,7 @@ public class Api
             .Where(pv => pv.Product.Id == productId)
             .AsQueryable();
 
-        if(productVariantId is not null)
+        if (productVariantId is not null)
         {
             query = query.Where(pv => pv.Id != productVariantId);
         }
@@ -767,6 +772,8 @@ public class Api
         return variants.SingleOrDefault((ProductVariant?)null);
     }
 }
+
+public record class ApiProductsResult(IEnumerable<ApiProduct> Items, int Total);
 
 public record class ApiProduct(string Id, string Name, string? Description, ApiProductGroup? Group, string? SKU, string? Image, decimal? Price, bool HasVariants, ProductVisibility? Visibility);
 

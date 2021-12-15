@@ -1,110 +1,94 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @inject IProductsClient ProductsClient
-@inject IModalService ModalService
+@inject IDialogService DialogService
 
 <EditForm Model="@this" OnValidSubmit="OnSubmit">
     <ObjectGraphDataAnnotationsValidator />
 
-    <div class="form-group">
-        <label>Name</label>
-        <InputText class="form-control" @bind-Value="Name" />
-        <ValidationMessage For="() => Name" />
-    </div>
+    <MudDialog>
+        <DialogContent>
 
-    <div class="form-group">
-        <label>Description</label>
-        <InputTextArea class="form-control" @bind-Value="Description" />
-        <ValidationMessage For="() => Description" />
-    </div>
+            <MudTextField Label="Name" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Name" For="() => Name" />
 
-    @if (Groups is not null)
-    {
-        <div class="form-group">
-            <label>Group</label>
-            <MySelect Items="Groups" @bind-Value="Group" ShowDefaultOption="true" Selector="(x) => x?.Name" />
-            <ValidationMessage For="() => Group" />
-        </div>
-    }
+            <MudTextField Lines="3" Label="Description" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Description" For="() => Description" />
 
-    @if (!Product.HasVariants)
-    {
-        <div class="form-group">
-            <label>SKU</label>
-            <InputText class="form-control" @bind-Value="SKU" />
-            <ValidationMessage For="() => SKU" />
-        </div>
-
-        <div class="form-group">
-            <label>Price</label>
-            <InputNumber type="currency" class="form-control" @bind-Value="Price" />
-            <ValidationMessage For="() => Price" />
-        </div>
-
-        <div class="form-check my-2">
-            <InputCheckbox class="form-check-input" @bind-Value="HasMultipleChoices" />
-            <label class="form-check-label">Has multiple choices</label>
-        </div>
-    }
-
-    @if (HasMultipleChoices)
-    {
-        <h4 class="mt-4">Values</h4>
-
-        <div class="form-group mb-2">
-            <button type="button" class="btn btn-secondary" @onclick="AddValue">Add value</button>
-
-            @if (Values.Any())
+            @if (Groups is not null)
             {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>SKU</th>
-                            <th>Price</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var value in Values)
-                        {
-                            <tr>
-
-                                <td>
-                                    <InputText class="form-control" @bind-Value="value.Name" />
-                                    <ValidationMessage For="() => value.Name" />
-                                </td>
-
-                                <td>
-                                    <InputText class="form-control" @bind-Value="value.SKU" />
-                                </td>
-
-                                <td>
-                                    <InputNumber type="currency" class="form-control" @bind-Value="value.Price" />
-                                </td>
-
-                                <td>
-                                    <a href="#" @onclick:preventDefault @onclick="async () => await DeleteValue(value)"><i class="oi oi-trash"></i></a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                <MudSelect T="ApiOptionGroup" Label="Group" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Group" ToStringFunc="x => x?.Name"
+                           For="() => Group">
+                    @foreach (var item in Groups)
+                    {
+                        <MudSelectItem Value="@item" />
+                    }
+                </MudSelect>
             }
-        </div>
-    }
 
-    <div class="mt-4">
-        <button type="button" @onclick="async () => await Modal.CancelAsync()" class="btn btn-secondary me-2">Cancel</button>
+            @if (!Product.HasVariants)
+            {
+                <MudTextField Label="SKU" Class="mb-6" Variant="Variant.Outlined" @bind-Value="SKU" For="() => SKU" />
 
-        <button class="btn btn-primary me-2">Create</button>
-    </div>
+                <MudNumericField Label="Price" Class="mb-6" Variant="Variant.Outlined" @bind-Value="Price" For="() => Price" />
 
+                <MudCheckBox Label="Has multiple choices" Class="mb-6" @bind-Checked="HasMultipleChoices" For="() => HasMultipleChoices" />
+            }
+
+            @if (HasMultipleChoices)
+            {
+                <MudText Typo="Typo.h6" Align="Align.Left" Class="mb-2">Values</MudText>
+
+                <div class="form-group mb-2">
+                    <MudButton Color="Color.Primary" OnClick="AddValue" StartIcon="@Icons.Material.Filled.Add">Add value</MudButton>
+
+                    @if (Values.Any())
+                    {
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>SKU</th>
+                                    <th>Price</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var value in Values)
+                                {
+                                    <tr>
+                                        <td>
+                                            <MudTextField Class="mb-2" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="value.Name" For="() => value.Name" />
+                                        </td>
+
+                                        <td>
+                                            <MudTextField Class="mb-2" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="value.SKU" For="() => value.SKU" />
+                                        </td>
+
+                                        <td>
+                                            <MudNumericField Class="mb-2" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="value.Price" For="() => value.Price" />
+                                        </td>
+
+                                        <td>
+                                            <MudIconButton Class="mb-2" Icon="@Icons.Material.Filled.Delete" OnClick="async () => await DeleteValue(value)" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => Modal.Cancel()">Cancel</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary">Create</MudButton>
+        </DialogActions>
+    </MudDialog>
 </EditForm>
 
 @code {
     IList<ApiOptionGroup?> Groups { get; set; }
 
-    [CascadingParameter] BlazoredModalInstance Modal { get; set; }
+    [CascadingParameter] MudDialogInstance Modal { get; set; }
 
     [Parameter] public string ProductId { get; set; }
 
@@ -140,9 +124,8 @@
 
     async Task DeleteValue(OptionValueVM vm)
     {
-        var modalRef = ModalService.ShowMessageBox("This cannot be undone.", "Delete the value?", yesText: "Yes", noText: "No");
-        var modalResult = await modalRef.Result;
-        if (modalResult.Cancelled || !(bool)modalResult.Data)
+        var modalResult = await DialogService.ShowMessageBox("Delete the value?", "This cannot be undone.", yesText: "Yes", noText: "No");
+        if (!modalResult.GetValueOrDefault())
         {
             return;
         }
@@ -169,7 +152,7 @@
         };
 
         var result = await ProductsClient.CreateProductOptionAsync(ProductId, data);
-        await Modal.CloseAsync(ModalResult.Ok(result));
+        Modal.Close(DialogResult.Ok(result));
     }
 
     public class OptionValueVM
