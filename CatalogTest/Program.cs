@@ -47,7 +47,7 @@ var products = await context.Products.AsNoTracking().AsSingleQuery()
 Console.WriteLine(products.First().Name);
 */
 
-var api = new Api(context);
+var api = new Api(context, null);
 var products2 = await api.GetProducts();
 var product = products2.Items.First();
 

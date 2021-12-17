@@ -1,7 +1,11 @@
-﻿using CatalogTest;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
+
+using CatalogTest;
 using CatalogTest.Data;
 
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +26,20 @@ builder.Services.AddOpenApiDocument(config =>
     config.Title = "Web API";
     config.Version = "v1";
 });
+
+builder.Services.AddAzureClients(builder =>
+{
+    // Add a KeyVault client
+    //builder.AddSecretClient(keyVaultUrl);
+
+    // Add a Storage account client
+    builder.AddBlobServiceClient(configuration.GetConnectionString("Azure:Storage"))
+            .WithVersion(BlobClientOptions.ServiceVersion.V2019_07_07);
+
+    // Use DefaultAzureCredential by default
+    builder.UseCredential(new DefaultAzureCredential());
+});
+
 
 builder.Services.AddScoped<Api>();
 

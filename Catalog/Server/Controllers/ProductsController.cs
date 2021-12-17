@@ -43,6 +43,22 @@ namespace Catalog.Server.Controllers
             return Ok();
         }
 
+        [HttpPost("{productId}/UploadImage")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<ActionResult> UploadProductImage([FromRoute] string productId, IFormFile file)
+        {
+            var url = await api.UploadProductImage(productId, Guid.NewGuid().ToString().Replace("-", string.Empty), file.OpenReadStream());
+            return Ok(url);
+        }
+
+        [HttpPost("{productId}/Variants/{variantId}/UploadImage")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<ActionResult> UploadProductImage([FromRoute] string productId, string variantId, IFormFile file)
+        {
+            var url = await api.UploadProductVariantImage(productId, variantId, Guid.NewGuid().ToString().Replace("-", string.Empty), file.OpenReadStream());
+            return Ok(url);
+        }
+
         [HttpGet("{productId}/Visibility")]
         public async Task<ActionResult> UpdateProductVisibility(string productId, ProductVisibility visibility)
         {

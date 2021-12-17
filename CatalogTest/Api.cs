@@ -1,5 +1,7 @@
 ﻿namespace CatalogTest;
 
+using Azure.Storage.Blobs;
+
 using System;
 
 using CatalogTest.Data;
@@ -9,10 +11,12 @@ using Microsoft.EntityFrameworkCore;
 public class Api
 {
     private readonly CatalogContext context;
+    private readonly BlobServiceClient blobServiceClient;
 
-    public Api(CatalogContext context)
+    public Api(CatalogContext context, BlobServiceClient blobServiceClient)
     {
         this.context = context;
+        this.blobServiceClient = blobServiceClient;
     }
 
     public async Task<ApiProductsResult> GetProducts(bool includeUnlisted = false, string? groupId = null, int page = 10, int pageSize = 10)
@@ -41,7 +45,7 @@ public class Api
             .ToArrayAsync();
 
         return new ApiProductsResult(products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.Group == null ? null : new ApiProductGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group?.Parent?.Id),
-            x.SKU, x.Image, x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted)),
+            x.SKU, GetImageUrl(x.Image), x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted)),
             totalCount);
     }
 
@@ -56,7 +60,43 @@ public class Api
         if (product == null) return null;
 
         return new ApiProduct(product.Id, product.Name, product.Description, product.Group == null ? null : new ApiProductGroup(product.Group.Id, product.Group.Name, product.Group.Description, product.Group?.Parent?.Id),
-            product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
+            product.SKU, GetImageUrl(product.Image), product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
+    }
+
+    public async Task<string?> UploadProductImage(string productId, string fileName, Stream strem)
+    {
+        var product = await context.Products
+                   .FirstAsync(x => x.Id == productId);
+
+        var blobContainerClient = blobServiceClient.GetBlobContainerClient("images");
+
+        var response = await blobContainerClient.UploadBlobAsync(fileName, strem);
+
+        product.Image = fileName; //$"http://127.0.0.1:10000/devstoreaccount1/images/{request.Id}";
+
+        await context.SaveChangesAsync();
+
+        return GetImageUrl(product.Image);
+    }
+
+    public async Task<string?> UploadProductVariantImage(string productId, string variantId, string fileName, Stream strem)
+    {
+        var product = await context.Products
+            .Include(x => x.Variants)
+            .FirstAsync(x => x.Id == productId);
+
+        var variant = await context.ProductVariants
+            .FirstAsync(x => x.Id == variantId);
+
+        var blobContainerClient = blobServiceClient.GetBlobContainerClient("images");
+
+        var response = await blobContainerClient.UploadBlobAsync(fileName, strem);
+
+        variant.Image = fileName; //$"http://127.0.0.1:10000/devstoreaccount1/images/{request.Id}";
+
+        await context.SaveChangesAsync();
+
+        return GetImageUrl(product.Image);
     }
 
     public async Task<ApiProduct?> CreateProduct(ApiCreateProduct data)
@@ -520,8 +560,13 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiProductVariant(variant.Id, variant.Name, variant.Description, variant.SKU, variant.Image, variant.Price,
+        return new ApiProductVariant(variant.Id, variant.Name, variant.Description, variant.SKU, GetImageUrl(variant.Image), variant.Price,
             variant.Values.Select(x => new ApiProductVariantOption(x.Option.Id, x.Option.Name, x.Value.Name)));
+    }
+
+    private static string? GetImageUrl(string? name)
+    {
+        return name is null ? null : $"http://127.0.0.1:10000/devstoreaccount1/images/{name}";
     }
 
     public async Task DeleteVariant(string productId, string productVariantId)
@@ -609,7 +654,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiProductVariant(variant.Id, variant.Name, variant.Description, variant.SKU, variant.Image, variant.Price,
+        return new ApiProductVariant(variant.Id, variant.Name, variant.Description, variant.SKU, GetImageUrl(variant.Image), variant.Price,
             variant.Values.Select(x => new ApiProductVariantOption(x.Option.Id, x.Option.Name, x.Value.Name)));
     }
 
@@ -639,7 +684,7 @@ public class Api
             .Where(pv => pv.Product.Id == productId)
             .ToArrayAsync();
 
-        return variants.Select(x => new ApiProductVariant(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price,
+        return variants.Select(x => new ApiProductVariant(x.Id, x.Name, x.Description, x.SKU, GetImageUrl(x.Image), x.Price,
             x.Values.Select(x => new ApiProductVariantOption(x.Option.Id, x.Option.Name, x.Value.Name))));
     }
 
@@ -656,7 +701,7 @@ public class Api
             .ThenInclude(pv => pv.Value)
             .FirstOrDefaultAsync(pv => pv.Product.Id == productId && pv.Id == productVariantId);
 
-        return new ApiProductVariant(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price,
+        return new ApiProductVariant(x.Id, x.Name, x.Description, x.SKU, GetImageUrl(x.Image), x.Price,
             x.Values.Select(x => new ApiProductVariantOption(x.Option.Id, x.Option.Name, x.Value.Name)));
 
     }
@@ -690,7 +735,7 @@ public class Api
 
         if (x is null) return null;
 
-        return new ApiProductVariant(x.Id, x.Name, x.Description, x.SKU, x.Image, x.Price,
+        return new ApiProductVariant(x.Id, x.Name, x.Description, x.SKU, GetImageUrl(x.Image), x.Price,
             x.Values.Select(x => new ApiProductVariantOption(x.Option.Id, x.Option.Name, x.Value.Name)));
     }
 

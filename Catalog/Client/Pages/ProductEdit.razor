@@ -16,40 +16,73 @@ else
 
     <MudText Typo="Typo.h3" Align="Align.Center" Class="mb-12">@product.Name</MudText>
 
-    <MudCard class="mb-4">
-        <MudCardHeader>
-            <MudText Typo="Typo.h5" Align="Align.Center">Details</MudText>
-        </MudCardHeader>
-        <MudCardContent>
-            <dl>
-                @if (!string.IsNullOrEmpty(product.Description))
-                {
-                    <dt>Description</dt>
-                    <dd>@product.Description</dd>
-                }
+    <MudButton StartIcon="@Icons.Material.Filled.Link" Color="Color.Primary" Link="@($"/products/{product.Id}")">View product</MudButton>
 
-                @if (product.Group is not null)
+    <MudGrid Spacing="6">
+        <MudItem xs="12" sm="12" md="6" lg="6">
+            <div class="card shadow-sm">
+                @if (product.Image is not null)
                 {
-                    <dt>Group</dt>
-                    <dd>@product.Group.Name</dd>
+                    <img class="bd-placeholder-img card-img-top" style="width: 100%; height: 225px" src="@product.Image" />
                 }
-
-                @if (!string.IsNullOrEmpty(product.Sku))
+                else
                 {
-                    <dt>SKU</dt>
-                    <dd>@product.Sku</dd>
+                    <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text></svg>
                 }
+            </div>
 
-                @if (product.Price is not null)
-                {
-                    <dt>Price</dt>
-                    <dd>@product.Price?.ToString("c")</dd>
-                }
-            </dl>
+            <InputFile id="fileInput" OnChange="UploadFiles" hidden accept="*.jpg, *.jpeg, *.png" />
 
-            <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="EditDetails" Class="my-2">Edit details</MudButton>
-        </MudCardContent>
-    </MudCard>
+            <MudButton HtmlTag="label"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Filled.CloudUpload"
+                       for="fileInput">
+                Upload image
+            </MudButton>
+
+        </MudItem>
+
+        <MudItem xs="12" sm="12" md="6" lg="6">
+
+            <MudCard class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5" Align="Align.Center">Details</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <dl>
+                        @if (!string.IsNullOrEmpty(product.Description))
+                        {
+                            <dt>Description</dt>
+                            <dd>@product.Description</dd>
+                        }
+
+                        @if (product.Group is not null)
+                        {
+                            <dt>Group</dt>
+                            <dd>@product.Group.Name</dd>
+                        }
+
+                        @if (!string.IsNullOrEmpty(product.Sku))
+                        {
+                            <dt>SKU</dt>
+                            <dd>@product.Sku</dd>
+                        }
+
+                        @if (product.Price is not null)
+                        {
+                            <dt>Price</dt>
+                            <dd>@product.Price?.ToString("c")</dd>
+                        }
+                    </dl>
+
+                    <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="EditDetails" Class="my-2">Edit details</MudButton>
+
+                </MudCardContent>
+            </MudCard>
+
+        </MudItem>
+
+    </MudGrid>
 
     <div class="form-group mb-4">
         <MudSelect T="ProductVisibility?" Label="Visibility" Variant="Variant.Outlined" Value="@product.Visibility" ValueChanged="async (e) => await UpdateVisibility((ProductVisibility?)e)" ToStringFunc="x => x?.ToString()">
@@ -254,7 +287,6 @@ else
     {
         var modalResult = await DialogService.ShowMessageBox("Delete the option?", "This cannot be undone.", yesText: "Yes", noText: "No");
         if (!modalResult.GetValueOrDefault())
-
         {
             return;
         }
@@ -331,6 +363,12 @@ else
         */
 
         //NavigationManager.NavigateTo($"/products/{product.Id}/edit", true);
+    }
+
+    private async void UploadFiles(InputFileChangeEventArgs e)
+    {
+        var file = e.GetMultipleFiles().First();
+        product.Image = await ProductsClient.UploadProductImageAsync(product.Id, new FileParameter(file.OpenReadStream(3 * 1000000), file.Name));
     }
 
     class ProductVariantVm
