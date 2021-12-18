@@ -53,7 +53,7 @@ namespace Catalog.Server.Controllers
 
         [HttpPost("{productId}/Variants/{variantId}/UploadImage")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public async Task<ActionResult> UploadProductImage([FromRoute] string productId, string variantId, IFormFile file)
+        public async Task<ActionResult> UploadVariantImage([FromRoute] string productId, string variantId, IFormFile file)
         {
             var url = await api.UploadProductVariantImage(productId, variantId, Guid.NewGuid().ToString().Replace("-", string.Empty), file.OpenReadStream());
             return Ok(url);

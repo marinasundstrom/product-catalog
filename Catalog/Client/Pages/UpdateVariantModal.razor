@@ -8,13 +8,28 @@
     <MudDialog>
         <DialogContent>
 
-            <MudTextField Label="Name" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="Name" For="() => Name" />
+            <MudTextField Label="Name" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="Name"
+                For="() => Name" />
 
-            <MudTextField Lines="3" Class="mb-6" Label="Description" Variant="MudBlazor.Variant.Outlined" @bind-Value="Description" For="() => Description" />
+            <MudTextField Lines="3" Class="mb-6" Label="Description" Variant="MudBlazor.Variant.Outlined"
+                @bind-Value="Description" For="() => Description" />
 
-            <MudTextField Label="SKU" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="SKU" For="() => SKU" />
+            <MudTextField Label="SKU" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="SKU"
+                For="() => SKU" />
 
-            <MudNumericField Label="Price" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="Price" For="() => Price" />
+            <MudNumericField Label="Price" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="Price"
+                For="() => Price" />
+
+            <InputFile id="fileInput" OnChange="UploadFiles" hidden accept="*.jpg, *.jpeg, *.png" />
+
+            <div class="mb-4">
+                <MudButton HtmlTag="label" Color="Color.Secondary" StartIcon="@Icons.Filled.CloudUpload"
+                    for="fileInput">
+                    Upload image
+                </MudButton>
+
+                <MudText Typo="Typo.body1">@file?.Name</MudText>
+            </div>
 
             <div class="form-group">
                 @if (Options is not null)
@@ -36,15 +51,16 @@
 
                                         @if (option.Values is not null)
                                         {
-                                        <td>
-                                            <MudSelect T="ApiOptionValue" Class="mb-6" Variant="MudBlazor.Variant.Outlined" @bind-Value="option.SelectedValue" ToStringFunc="x => x?.Name"
-                                                       For="() => option.SelectedValue">
-                                                @foreach (var item in option.Values)
-                                                {
-                                                    <MudSelectItem Value="@item" />
-                                                }
-                                            </MudSelect>
-                                        </td>
+                                            <td>
+                                                <MudSelect T="ApiOptionValue" Class="mb-6" Variant="MudBlazor.Variant.Outlined"
+                                    @bind-Value="option.SelectedValue" ToStringFunc="x => x?.Name"
+                                    For="() => option.SelectedValue">
+                                                    @foreach (var item in option.Values)
+                                                    {
+                                                        <MudSelectItem Value="@item" />
+                                                    }
+                                                </MudSelect>
+                                            </td>
                                         }
                                     </tr>
                                 }
@@ -102,7 +118,7 @@
             Options.Add(vm);
 
             vm.Values.AddRange(
-                await ProductsClient.GetProductOptionValuesAsync(ProductId, option.Id));
+            await ProductsClient.GetProductOptionValuesAsync(ProductId, option.Id));
 
             var o = Variant.Options.FirstOrDefault(x => x.Name == option.Name);
 
@@ -113,6 +129,13 @@
                 vm.SelectedValue = vm.Values.FirstOrDefault();
             }
         }
+    }
+
+    IBrowserFile? file;
+
+    private void UploadFiles(InputFileChangeEventArgs e)
+    {
+        file = e.GetMultipleFiles().First();
     }
 
     async Task OnSubmit()
@@ -141,6 +164,13 @@
         try
         {
             var result = await ProductsClient.UpdateVariantAsync(ProductId, Variant.Id, data);
+
+            if (file is not null)
+            {
+                result.Image = await ProductsClient.UploadVariantImageAsync(ProductId, result.Id, new
+                FileParameter(file.OpenReadStream(3 * 1000000), file.Name));
+            }
+
             Modal.Close(DialogResult.Ok(result));
         }
         catch (ApiException<ProblemDetails> exc)
@@ -160,4 +190,3 @@
         public List<ApiOptionValue> Values { get; set; } = new List<ApiOptionValue>();
     }
 }
-

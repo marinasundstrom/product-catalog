@@ -96,7 +96,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return GetImageUrl(product.Image);
+        return GetImageUrl(variant.Image);
     }
 
     public async Task<ApiProduct?> CreateProduct(ApiCreateProduct data)

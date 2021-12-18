@@ -163,6 +163,7 @@ else
                           Dense="true" Hover="true" Class="mb-4">
 
                     <HeaderContent>
+                        <MudTh><MudTableSortLabel SortLabel="nr_field1" T="ApiProductVariant">Image</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="nr_field" T="ApiProductVariant">Name</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="sign_field" T="ApiProductVariant">SKU</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="name_field" T="ApiProductVariant">Price</MudTableSortLabel></MudTh>
@@ -179,6 +180,12 @@ else
                     </HeaderContent>
 
                     <RowTemplate Context="variant">
+                        <MudTd DataLabel="Image">
+                            @if (variant.Image is not null) 
+                            {
+                                <img style="height: 100px; width: 100px" src="@variant.Image" />
+                            }
+                        </MudTd>
                         <MudTd DataLabel="Name">@variant.Name</MudTd>
                         <MudTd DataLabel="SKU">@variant.Sku</MudTd>
                         <MudTd DataLabel="SKU">@variant.Price?.ToString("c")</MudTd>

@@ -324,7 +324,7 @@
         "tags": [
           "Products"
         ],
-        "operationId": "Products_UploadProductImage2",
+        "operationId": "Products_UploadVariantImage",
         "parameters": [
           {
             "name": "productId",
