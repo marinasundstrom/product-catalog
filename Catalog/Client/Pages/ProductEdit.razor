@@ -23,7 +23,7 @@ else
             <div class="card shadow-sm">
                 @if (product.Image is not null)
                 {
-                    <img class="bd-placeholder-img card-img-top" style="width: 100%; height: 225px" src="@product.Image" />
+                    <img class="bd-placeholder-img card-img-top" style="width: 100%; height: 100%; object-fit: cover;" src="@product.Image" />
                 }
                 else
                 {
@@ -183,7 +183,7 @@ else
                         <MudTd DataLabel="Image">
                             @if (variant.Image is not null) 
                             {
-                                <img style="height: 100px; width: 100px" src="@variant.Image" />
+                                <img style="height: 100px; width: 100px; object-fit: cover;" src="@variant.Image" />
                             }
                         </MudTd>
                         <MudTd DataLabel="Name">@variant.Name</MudTd>
