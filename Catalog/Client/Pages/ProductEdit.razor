@@ -369,6 +369,8 @@ else
     {
         var file = e.GetMultipleFiles().First();
         product.Image = await ProductsClient.UploadProductImageAsync(product.Id, new FileParameter(file.OpenReadStream(3 * 1000000), file.Name));
+
+        StateHasChanged();
     }
 
     class ProductVariantVm
