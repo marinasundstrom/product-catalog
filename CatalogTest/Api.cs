@@ -70,9 +70,18 @@ public class Api
 
         var blobContainerClient = blobServiceClient.GetBlobContainerClient("images");
 
+#if DEBUG
+        await blobContainerClient.CreateIfNotExistsAsync();
+#endif
+
         var response = await blobContainerClient.UploadBlobAsync(fileName, strem);
 
-        product.Image = fileName; //$"http://127.0.0.1:10000/devstoreaccount1/images/{request.Id}";
+        if (product.Image is not null)
+        {
+            await blobContainerClient.DeleteBlobAsync(product.Image);
+        }
+        
+        product.Image = fileName;
 
         await context.SaveChangesAsync();
 
@@ -90,9 +99,18 @@ public class Api
 
         var blobContainerClient = blobServiceClient.GetBlobContainerClient("images");
 
+#if DEBUG
+        await blobContainerClient.CreateIfNotExistsAsync();
+#endif
+
         var response = await blobContainerClient.UploadBlobAsync(fileName, strem);
 
-        variant.Image = fileName; //$"http://127.0.0.1:10000/devstoreaccount1/images/{request.Id}";
+        if (variant.Image is not null)
+        {
+            await blobContainerClient.DeleteBlobAsync(variant.Image);
+        }
+
+        variant.Image = fileName;
 
         await context.SaveChangesAsync();
 
