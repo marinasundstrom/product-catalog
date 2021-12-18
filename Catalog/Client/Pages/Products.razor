@@ -17,11 +17,11 @@
         <div class="mb-4">
             @if (productGroups is not null)
             {
-                <MudChip OnClick="async () => await SetGroup(null!)">All</MudChip>
+                <MudChip Color="Color.Primary" OnClick="async () => await SetGroup(null!)">All</MudChip>
 
                 foreach (var pg in productGroups)
                 {
-                    <MudChip OnClick="async () => await SetGroup(pg.Id)">@pg.Name</MudChip>
+                    <MudChip Color="Color.Secondary" OnClick="async () => await SetGroup(pg.Id)">@pg.Name</MudChip>
                 }
             }
         </div>
