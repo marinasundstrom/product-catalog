@@ -15,15 +15,17 @@
 
 <div class="py-5">
         <div class="mb-4">
-            @if (productGroups is not null)
-            {
-                <MudChip Color="Color.Primary" OnClick="async () => await SetGroup(null!)">All</MudChip>
-
-                foreach (var pg in productGroups)
+            <MudChipSet SelectedChip="chip" SelectedChipChanged="async (MudChip e) => await SetGroup(e)">
+                @if (productGroups is not null)
                 {
-                    <MudChip Color="Color.Secondary" OnClick="async () => await SetGroup(pg.Id)">@pg.Name</MudChip>
+                    <MudChip Color="Color.Primary" Text="All"></MudChip>
+
+                    foreach (var pg in productGroups)
+                    {
+                        <MudChip Color="Color.Secondary" Text="@pg.Name"></MudChip>
+                    }
                 }
-            }
+            </MudChipSet>
         </div>
 
         @if (products == null)
@@ -61,6 +63,7 @@
 
 @code
 {
+    MudChip chip;
     IEnumerable<ApiProductGroup>? productGroups = null;
     IEnumerable<ApiProduct>? products = null;
 
@@ -88,11 +91,16 @@
         NavigationManager.NavigateTo($"/products/{product.Id}/edit");
     }
 
-    async Task SetGroup(string groupId)
+    async Task SetGroup(MudChip chip)
     {
-        var result = await ProductsClient.GetProductsAsync(false, groupId, 0, 100);
+        var group = productGroups.FirstOrDefault(g => g.Name == chip.Text);
+
+        var result = await ProductsClient.GetProductsAsync(false, group?.Id, 0, 100);
         products = result.Items;
-        NavigationManager.NavigateTo($"/products?groupId={groupId}", replace: true);
+
+        this.chip = chip;
+
+        NavigationManager.NavigateTo($"/products?groupId={group?.Id}", replace: true);
     }
 }
 
