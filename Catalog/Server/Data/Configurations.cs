@@ -50,6 +50,12 @@ public class OptionConfiguration : IEntityTypeConfiguration<Option>
     public void Configure(EntityTypeBuilder<Option> builder)
     {
         builder.ToTable("Options", t => t.IsTemporal());
+
+        builder
+            .HasMany(p => p.Values)
+            .WithOne(p => p.Option);
+
+        builder.HasOne(p => p.DefaultValue);
     }
 }
 
@@ -74,5 +80,7 @@ public class VariantValueConfiguration : IEntityTypeConfiguration<VariantValue>
     public void Configure(EntityTypeBuilder<VariantValue> builder)
     {
         builder.ToTable("VariantValues", t => t.IsTemporal());
+
+        builder.HasOne(m => m.Value).WithMany(m => m.VariantValues).OnDelete(DeleteBehavior.NoAction);
     }
 }

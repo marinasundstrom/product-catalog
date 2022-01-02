@@ -24,16 +24,6 @@ public class CatalogContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Product).Assembly);
-
-        modelBuilder.Entity<Option>()
-            .HasMany(p => p.Values)
-            .WithOne(p => p.Option);
-
-        modelBuilder.Entity<Option>()
-            .HasOne(p => p.DefaultValue);
-
-        modelBuilder.Entity<VariantValue>()
-         .HasOne(m => m.Value).WithMany(m => m.VariantValues).OnDelete(DeleteBehavior.NoAction);
     }
 
     public DbSet<ProductGroup> ProductGroups { get; set; } = null!;
