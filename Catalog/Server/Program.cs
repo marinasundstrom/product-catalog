@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Blobs;
 
+using Catalog.Server.Hubs;
 
 using CatalogTest;
 using Catalog.Data;
@@ -27,6 +28,8 @@ builder.Services.AddOpenApiDocument(config =>
     config.Title = "Web API";
     config.Version = "v1";
 });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddAzureClients(builder =>
 {
@@ -68,6 +71,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.MapHub<ItemsHub>("/hubs/items");
 
 app.MapRazorPages();
 app.MapControllers();
