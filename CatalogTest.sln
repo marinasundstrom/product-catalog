@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 25.0.1700.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CatalogTest", "CatalogTest\CatalogTest.csproj", "{BA14197E-35E5-4B71-AC13-A0C7162C783B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.Server", "Catalog\Server\Catalog.Server.csproj", "{76C4FF73-510B-48A8-BC42-E96481022BA0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.Client", "Catalog\Client\Catalog.Client.csproj", "{7D0D9FEF-F46F-4498-9A82-89803E2470E2}"
@@ -21,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BA14197E-35E5-4B71-AC13-A0C7162C783B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA14197E-35E5-4B71-AC13-A0C7162C783B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA14197E-35E5-4B71-AC13-A0C7162C783B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA14197E-35E5-4B71-AC13-A0C7162C783B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{76C4FF73-510B-48A8-BC42-E96481022BA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{76C4FF73-510B-48A8-BC42-E96481022BA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76C4FF73-510B-48A8-BC42-E96481022BA0}.Release|Any CPU.ActiveCfg = Release|Any CPU

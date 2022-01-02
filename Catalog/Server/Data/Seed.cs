@@ -1,11 +1,11 @@
 ﻿using System;
 
-using CatalogTest.Data;
+using Catalog.Data;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CatalogTest.Data;
+namespace Catalog.Data;
 
 public class Seed
 {

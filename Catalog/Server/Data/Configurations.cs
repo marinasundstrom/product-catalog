@@ -1,6 +1,6 @@
 ﻿using System;
 
-using CatalogTest.Data;
+using Catalog.Data;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

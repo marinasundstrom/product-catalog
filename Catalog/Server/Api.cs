@@ -4,7 +4,7 @@ using Azure.Storage.Blobs;
 
 using System;
 
-using CatalogTest.Data;
+using Catalog.Data;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -29,7 +29,7 @@ public class Api
 
         if (!includeUnlisted)
         {
-            query = query.Where(x => x.Visibility == Data.ProductVisibility.Listed);
+            query = query.Where(x => x.Visibility == Catalog.Data.ProductVisibility.Listed);
         }
 
         if (groupId is not null)
@@ -45,7 +45,7 @@ public class Api
             .ToArrayAsync();
 
         return new ApiProductsResult(products.Select(x => new ApiProduct(x.Id, x.Name, x.Description, x.Group == null ? null : new ApiProductGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group?.Parent?.Id),
-            x.SKU, GetImageUrl(x.Image), x.Price, x.HasVariants, x.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted)),
+            x.SKU, GetImageUrl(x.Image), x.Price, x.HasVariants, x.Visibility == Catalog.Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted)),
             totalCount);
     }
 
@@ -60,7 +60,7 @@ public class Api
         if (product == null) return null;
 
         return new ApiProduct(product.Id, product.Name, product.Description, product.Group == null ? null : new ApiProductGroup(product.Group.Id, product.Group.Name, product.Group.Description, product.Group?.Parent?.Id),
-            product.SKU, GetImageUrl(product.Image), product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
+            product.SKU, GetImageUrl(product.Image), product.Price, product.HasVariants, product.Visibility == Catalog.Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
     }
 
     public async Task<string?> UploadProductImage(string productId, string fileName, Stream strem)
@@ -135,11 +135,11 @@ public class Api
 
         if (data.Visibility == null)
         {
-            product.Visibility = Data.ProductVisibility.Unlisted;
+            product.Visibility = Catalog.Data.ProductVisibility.Unlisted;
         }
         else
         {
-            product.Visibility = data.Visibility == ProductVisibility.Listed ? Data.ProductVisibility.Listed : Data.ProductVisibility.Unlisted;
+            product.Visibility = data.Visibility == ProductVisibility.Listed ? Catalog.Data.ProductVisibility.Listed : Catalog.Data.ProductVisibility.Unlisted;
         }
 
         context.Products.Add(product);
@@ -147,7 +147,7 @@ public class Api
         await context.SaveChangesAsync();
 
         return new ApiProduct(product.Id, product.Name, product.Description, product.Group == null ? null : new ApiProductGroup(product.Group.Id, product.Group.Name, product.Group.Description, product.Group?.Parent?.Id),
-            product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
+            product.SKU, product.Image, product.Price, product.HasVariants, product.Visibility == Catalog.Data.ProductVisibility.Listed ? ProductVisibility.Listed : ProductVisibility.Unlisted);
     }
 
     public async Task UpdateProductDetails(string productId, ApiUpdateProductDetails data)
@@ -172,7 +172,7 @@ public class Api
         var product = await context.Products
             .FirstAsync(x => x.Id == productId);
 
-        product.Visibility = visibility == ProductVisibility.Listed ? Data.ProductVisibility.Listed : Data.ProductVisibility.Unlisted;
+        product.Visibility = visibility == ProductVisibility.Listed ? Catalog.Data.ProductVisibility.Listed : Catalog.Data.ProductVisibility.Unlisted;
 
         await context.SaveChangesAsync();
     }
@@ -215,7 +215,7 @@ public class Api
             SKU = data.SKU,
             Group = group,
             Price = data.Price,
-            OptionType = data.OptionType == OptionType.Single ? Data.OptionType.Single : Data.OptionType.Multiple
+            OptionType = data.OptionType == OptionType.Single ? Catalog.Data.OptionType.Single : Catalog.Data.OptionType.Multiple
         };
 
         foreach (var v in data.Values)
@@ -235,7 +235,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Description, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
+        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Catalog.Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Description, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
             option.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             option.DefaultValue == null ? null : new ApiOptionValue(option.DefaultValue.Id, option.DefaultValue.Name, option.DefaultValue.SKU, option.DefaultValue.Price, option.DefaultValue.Seq));
     }
@@ -274,7 +274,7 @@ public class Api
         option.SKU = data.SKU;
         option.Group = group;
         option.Price = data.Price;
-        option.OptionType = data.OptionType == OptionType.Single ? Data.OptionType.Single : Data.OptionType.Multiple;
+        option.OptionType = data.OptionType == OptionType.Single ? Catalog.Data.OptionType.Single : Catalog.Data.OptionType.Multiple;
 
         foreach (var v in data.Values)
         {
@@ -316,7 +316,7 @@ public class Api
 
         await context.SaveChangesAsync();
 
-        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Description, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
+        return new ApiOption(option.Id, option.Name, option.Description, option.OptionType == Catalog.Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, option.Group == null ? null : new ApiOptionGroup(option.Group.Id, option.Group.Name, option.Group.Description, option.Group.Seq, option.Group.Min, option.Group.Max), option.SKU, option.Price, option.IsSelected,
             option.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             option.DefaultValue == null ? null : new ApiOptionValue(option.DefaultValue.Id, option.DefaultValue.Name, option.DefaultValue.SKU, option.DefaultValue.Price, option.DefaultValue.Seq));
     }
@@ -332,7 +332,7 @@ public class Api
             .Where(p => p.Products.Any(x => x.Id == productId))
             .ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Catalog.Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -374,7 +374,7 @@ public class Api
 
         var options = await query.ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Catalog.Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -389,7 +389,7 @@ public class Api
             .Where(o => o.Id == optionId)
             .ToArrayAsync();
 
-        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
+        return options.Select(x => new ApiOption(x.Id, x.Name, x.Description, x.OptionType == Catalog.Data.OptionType.Single ? OptionType.Single : OptionType.Multiple, x.Group == null ? null : new ApiOptionGroup(x.Group.Id, x.Group.Name, x.Group.Description, x.Group.Seq, x.Group.Min, x.Group.Max), x.SKU, x.Price, x.IsSelected,
             x.Values.Select(x => new ApiOptionValue(x.Id, x.Name, x.SKU, x.Price, x.Seq)),
             x.DefaultValue == null ? null : new ApiOptionValue(x.DefaultValue.Id, x.DefaultValue.Name, x.DefaultValue.SKU, x.DefaultValue.Price, x.DefaultValue.Seq)));
     }
@@ -402,7 +402,7 @@ public class Api
 
         if (!includeWithUnlistedProducts)
         {
-            query = query.Where(x => x.Products.Any(z => z.Visibility == Data.ProductVisibility.Listed));
+            query = query.Where(x => x.Products.Any(z => z.Visibility == Catalog.Data.ProductVisibility.Listed));
         }
 
         var productGroups = await query.ToListAsync();

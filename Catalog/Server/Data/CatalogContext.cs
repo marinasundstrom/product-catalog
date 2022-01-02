@@ -1,4 +1,4 @@
-﻿namespace CatalogTest.Data;
+﻿namespace Catalog.Data;
 
 using System.ComponentModel.DataAnnotations.Schema;
 
